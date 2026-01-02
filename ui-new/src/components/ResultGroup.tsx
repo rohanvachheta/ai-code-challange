@@ -116,6 +116,22 @@ export function OfferCard({ offer }: { offer: OfferResult }) {
             {offer.location}
           </span>
         </div>
+        {offer.sellerDetails && (
+          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+            <span className="flex items-center gap-1">
+              <User className="w-4 h-4" />
+              {offer.sellerDetails.fullName}
+            </span>
+            <span className="flex items-center gap-1">
+              <Mail className="w-4 h-4" />
+              {offer.sellerDetails.email}
+            </span>
+            <span className="flex items-center gap-1">
+              <Phone className="w-4 h-4" />
+              {offer.sellerDetails.phone}
+            </span>
+          </div>
+        )}
       </div>
       <div className="text-right">
         <p className="text-2xl font-bold text-primary">
@@ -147,19 +163,57 @@ export function PurchaseCard({ purchase }: { purchase: PurchaseResult }) {
             {purchase.offerMake} {purchase.offerModel} • VIN: {purchase.offerVin}
           </span>
         </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-          <span className="flex items-center gap-1">
-            <User className="w-4 h-4" />
-            {purchase.buyerName}
-          </span>
-          <span className="flex items-center gap-1">
-            <Mail className="w-4 h-4" />
-            {purchase.buyerEmail}
-          </span>
-          <span className="flex items-center gap-1">
-            <Calendar className="w-4 h-4" />
-            {purchase.purchaseDate}
-          </span>
+        <div className="space-y-1">
+          {purchase.buyerDetails && (
+            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+              <span className="text-xs font-medium text-foreground">Buyer:</span>
+              <span className="flex items-center gap-1">
+                <User className="w-4 h-4" />
+                {purchase.buyerDetails.fullName}
+              </span>
+              <span className="flex items-center gap-1">
+                <Mail className="w-4 h-4" />
+                {purchase.buyerDetails.email}
+              </span>
+              <span className="flex items-center gap-1">
+                <Phone className="w-4 h-4" />
+                {purchase.buyerDetails.phone}
+              </span>
+            </div>
+          )}
+          {purchase.sellerDetails && (
+            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+              <span className="text-xs font-medium text-foreground">Seller:</span>
+              <span className="flex items-center gap-1">
+                <User className="w-4 h-4" />
+                {purchase.sellerDetails.fullName}
+              </span>
+              <span className="flex items-center gap-1">
+                <Mail className="w-4 h-4" />
+                {purchase.sellerDetails.email}
+              </span>
+              <span className="flex items-center gap-1">
+                <Phone className="w-4 h-4" />
+                {purchase.sellerDetails.phone}
+              </span>
+            </div>
+          )}
+          {!purchase.buyerDetails && !purchase.sellerDetails && (
+            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1">
+                <User className="w-4 h-4" />
+                {purchase.buyerName}
+              </span>
+              <span className="flex items-center gap-1">
+                <Mail className="w-4 h-4" />
+                {purchase.buyerEmail}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                {purchase.purchaseDate}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

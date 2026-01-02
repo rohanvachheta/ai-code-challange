@@ -68,6 +68,7 @@ function transformApiResult(apiResult: ApiSearchResult): any {
         location: apiResult.location || '',
         condition: apiResult.condition?.toLowerCase() as "new" | "used" | "certified" || "new",
         status: mapStatus(apiResult.status),
+        sellerDetails: apiResult.sellerDetails,
       };
     case "purchase":
       return {
@@ -76,21 +77,24 @@ function transformApiResult(apiResult: ApiSearchResult): any {
         offerVin: apiResult.vin || '',
         offerMake: apiResult.make || '',
         offerModel: apiResult.model || '',
-        buyerName: 'Buyer',
-        buyerEmail: 'buyer@example.com',
+        buyerName: apiResult.buyerDetails?.fullName || 'Buyer',
+        buyerEmail: apiResult.buyerDetails?.email || 'buyer@example.com',
         purchaseDate: apiResult.createdAt,
         status: mapPurchaseStatus(apiResult.status),
+        buyerDetails: apiResult.buyerDetails,
+        sellerDetails: apiResult.sellerDetails,
       };
     case "transport":
       return {
         ...base,
         transportId: apiResult.entityId,
-        carrierName: 'Carrier',
-        carrierPhone: '555-0123',
+        carrierName: apiResult.carrierDetails?.fullName || 'Carrier',
+        carrierPhone: apiResult.carrierDetails?.phone || '555-0123',
         pickupLocation: apiResult.pickupLocation || '',
         deliveryLocation: apiResult.deliveryLocation || '',
         scheduleDate: apiResult.scheduledPickupDate || apiResult.createdAt,
         status: mapTransportStatus(apiResult.status),
+        carrierDetails: apiResult.carrierDetails,
       };
     default:
       return base;
@@ -165,7 +169,7 @@ export async function fetchSearchResultsFromAPIWithFilters(
 
   const requestPayload: SearchRequest = {
     userType: userContext.userType,
-    accountId: userContext.accountId,
+    userId: userContext.userId || userContext.accountId,
     searchText: query,
     page: pagination.page,
     limit: pagination.pageSize,
@@ -273,8 +277,59 @@ async function fetchSearchResultsLegacy(
   pagination: { page: number; pageSize: number } = { page: 1, pageSize: 20 },
   statusFilter: StatusFilter = "all"
 ): Promise<SearchResponse> {
+  console.log('🔄 fetchSearchResultsLegacy called with:', { query, userContext, pagination, statusFilter });
+  
   // Simulate network delay
   await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Handle global search wildcard "*" - show all results
+  if (query.trim() === '*') {
+    console.log('🌐 Global search detected: "*" - returning all records based on role');
+    
+    // Step 1: Get all data (no query filtering)
+    let filteredOffers = DUMMY_OFFERS;
+    let filteredPurchases = DUMMY_PURCHASES;
+    let filteredTransports = DUMMY_TRANSPORTS;
+
+    // Step 2: Apply status filtering
+    filteredOffers = filterOffersByStatus(filteredOffers, statusFilter);
+    filteredPurchases = filterPurchasesByStatus(filteredPurchases, statusFilter);
+    filteredTransports = filterTransportsByStatus(filteredTransports, statusFilter);
+
+    // Step 3: Apply user context filtering (role-based filtering)
+    const { offers, purchases, transports } = filterByUserContext(
+      filteredOffers,
+      filteredPurchases,
+      filteredTransports,
+      userContext
+    );
+
+    // Step 4: Apply pagination
+    const startIndex = (pagination.page - 1) * pagination.pageSize;
+    const endIndex = startIndex + pagination.pageSize;
+
+    const paginatedOffers = offers.slice(startIndex, endIndex);
+    const paginatedPurchases = purchases.slice(startIndex, endIndex);
+    const paginatedTransports = transports.slice(startIndex, endIndex);
+
+    const totalResults = offers.length + purchases.length + transports.length;
+    const totalPages = Math.ceil(totalResults / pagination.pageSize);
+
+    return {
+      query,
+      totalResults,
+      results: {
+        offers: paginatedOffers,
+        purchases: paginatedPurchases,
+        transports: paginatedTransports,
+      },
+      pagination: {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        totalPages,
+      },
+    };
+  }
 
   // If no query, return empty results
   if (!query.trim()) {
@@ -347,7 +402,7 @@ export async function fetchSearchResults(
   userContext: UserContext,
   pagination: { page: number; pageSize: number } = { page: 1, pageSize: 20 },
   statusFilter: StatusFilter = "all",
-  useRealAPI: boolean = true
+  useRealAPI: boolean = true  // Switch back to real API
 ): Promise<SearchResponse> {
   // Use real API if requested and available
   if (useRealAPI) {
@@ -371,7 +426,7 @@ export async function fetchSearchResultsWithFilters(
   filters: SearchFilters,
   userContext: UserContext,
   pagination: { page: number; pageSize: number } = { page: 1, pageSize: 5 },
-  useRealAPI: boolean = true
+  useRealAPI: boolean = true  // Switch back to real API
 ): Promise<SearchResponse> {
   // Use real API if requested and available
   if (useRealAPI) {
@@ -386,6 +441,50 @@ export async function fetchSearchResultsWithFilters(
   // Fallback to dummy data implementation
   // Simulate network delay
   await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Handle global search wildcard "*" - show all results
+  if (query.trim() === '*') {
+    console.log('🌐 Global search with filters detected: "*" - returning all records based on role');
+    
+    // Apply advanced filters to dummy data - but get all data first since "*" means "show all"
+    let filteredOffers = filterOffersAdvanced(DUMMY_OFFERS, filters);
+    let filteredPurchases = filterPurchasesAdvanced(DUMMY_PURCHASES, filters);
+    let filteredTransports = filterTransportsAdvanced(DUMMY_TRANSPORTS, filters);
+
+    // Apply user context filtering
+    const { offers, purchases, transports } = filterByUserContext(
+      filteredOffers,
+      filteredPurchases,
+      filteredTransports,
+      userContext
+    );
+
+    // Apply pagination
+    const startIndex = (pagination.page - 1) * pagination.pageSize;
+    const endIndex = startIndex + pagination.pageSize;
+
+    const paginatedOffers = offers.slice(startIndex, endIndex);
+    const paginatedPurchases = purchases.slice(startIndex, endIndex);
+    const paginatedTransports = transports.slice(startIndex, endIndex);
+
+    const totalResults = offers.length + purchases.length + transports.length;
+    const totalPages = Math.ceil(totalResults / pagination.pageSize);
+
+    return {
+      query,
+      totalResults,
+      results: {
+        offers: paginatedOffers,
+        purchases: paginatedPurchases,
+        transports: paginatedTransports,
+      },
+      pagination: {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        totalPages,
+      },
+    };
+  }
 
   // If no query, return empty results
   if (!query.trim()) {

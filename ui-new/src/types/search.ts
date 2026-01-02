@@ -62,12 +62,19 @@
 // export type SearchResult = OfferResult | PurchaseResult | TransportResult;
 
 // // Autocomplete suggestion
-// export interface AutocompleteSuggestion {
-//   id: string;
-//   text: string;
-//   entityType: EntityType;
-//   highlightedText: string;
-// }
+export interface AutocompleteSuggestion {
+  id: string;
+  text: string;
+  entityType: EntityType;
+  highlightedText: string;
+}
+
+// Enhanced smart suggestion with confidence and context
+export interface SmartSuggestion extends AutocompleteSuggestion {
+  suggestionType: 'vin' | 'make_model' | 'phone' | 'name' | 'location' | 'price' | 'year';
+  confidence: number;
+  context?: string;
+}
 
 // // Grouped search response
 // export interface SearchResponse {
@@ -108,10 +115,18 @@ export interface UserContext {
   userId?: string;
 }
 
+// User details interface
+export interface UserDetails {
+  fullName: string;
+  email: string;
+  phone: string;
+  userType: string;
+}
+
 // API Request/Response types for the actual search endpoint
 export interface SearchRequest {
   userType: UserType;
-  accountId: string;
+  userId: string;
   searchText: string;
   page: number;
   limit: number;
@@ -162,6 +177,10 @@ export interface ApiSearchResult {
   deliveryLocation?: string;
   scheduledPickupDate?: string;
   scheduledDeliveryDate?: string;
+  // User details
+  sellerDetails?: UserDetails;
+  buyerDetails?: UserDetails;
+  carrierDetails?: UserDetails;
 }
 
 export interface ApiSearchResponse {
@@ -191,6 +210,7 @@ export interface OfferResult extends BaseSearchResult {
   location: string;
   condition: "new" | "used" | "certified";
   status: "available" | "pending" | "sold";
+  sellerDetails?: UserDetails;
 }
 // Purchase entity
 export interface PurchaseResult extends BaseSearchResult {
@@ -203,6 +223,8 @@ export interface PurchaseResult extends BaseSearchResult {
   buyerEmail: string;
   purchaseDate: string;
   status: "pending" | "completed" | "cancelled";
+  buyerDetails?: UserDetails;
+  sellerDetails?: UserDetails;
 }
 // Transport entity
 export interface TransportResult extends BaseSearchResult {

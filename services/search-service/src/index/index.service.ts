@@ -31,6 +31,13 @@ export class IndexService {
       price: offer.price,
       location: offer.location,
       condition: offer.condition,
+      // Include seller details if available
+      sellerDetails: offer.sellerDetails ? {
+        fullName: offer.sellerDetails.fullName,
+        email: offer.sellerDetails.email,
+        phone: offer.sellerDetails.phone,
+        userType: offer.sellerDetails.userType
+      } : null,
     };
 
     await this.elasticsearchService.indexDocument(document);
@@ -58,6 +65,26 @@ export class IndexService {
       },
       purchasePrice: purchase.purchasePrice,
       paymentMethod: purchase.paymentMethod,
+      // Include VIN and offer details if available
+      vin: purchase.offerDetails?.vin || null,
+      make: purchase.offerDetails?.make || null,
+      model: purchase.offerDetails?.model || null,
+      year: purchase.offerDetails?.year || null,
+      condition: purchase.offerDetails?.condition || null,
+      location: purchase.offerDetails?.location || null,
+      // Include buyer and seller details if available
+      buyerDetails: purchase.buyerDetails ? {
+        fullName: purchase.buyerDetails.fullName,
+        email: purchase.buyerDetails.email,
+        phone: purchase.buyerDetails.phone,
+        userType: purchase.buyerDetails.userType
+      } : null,
+      sellerDetails: purchase.sellerDetails ? {
+        fullName: purchase.sellerDetails.fullName,
+        email: purchase.sellerDetails.email,
+        phone: purchase.sellerDetails.phone,
+        userType: purchase.sellerDetails.userType
+      } : null,
     };
 
     await this.elasticsearchService.indexDocument(document);
@@ -112,6 +139,18 @@ export class IndexService {
       `${offer.year} ${offer.make} ${offer.model}`,
     ].filter(part => part);
 
+    // Add seller details if available
+    if (offer.sellerDetails) {
+      searchParts.push(
+        offer.sellerDetails.fullName,
+        offer.sellerDetails.firstName,
+        offer.sellerDetails.lastName,
+        offer.sellerDetails.email,
+        offer.sellerDetails.phone,
+        offer.sellerDetails.userType
+      );
+    }
+
     return searchParts.join(' ').toLowerCase();
   }
 
@@ -124,6 +163,47 @@ export class IndexService {
       purchase.purchasePrice?.toString(),
       purchase.notes,
     ].filter(part => part);
+
+    // Add buyer details if available
+    if (purchase.buyerDetails) {
+      searchParts.push(
+        purchase.buyerDetails.fullName,
+        purchase.buyerDetails.firstName,
+        purchase.buyerDetails.lastName,
+        purchase.buyerDetails.email,
+        purchase.buyerDetails.phone,
+        purchase.buyerDetails.userType
+      );
+    }
+
+    // Add seller details if available
+    if (purchase.sellerDetails) {
+      searchParts.push(
+        purchase.sellerDetails.fullName,
+        purchase.sellerDetails.firstName,
+        purchase.sellerDetails.lastName,
+        purchase.sellerDetails.email,
+        purchase.sellerDetails.phone,
+        purchase.sellerDetails.userType
+      );
+    }
+
+    // Add offer details if available
+    if (purchase.offerDetails) {
+      searchParts.push(
+        purchase.offerDetails.make,
+        purchase.offerDetails.model,
+        purchase.offerDetails.year?.toString(),
+        purchase.offerDetails.vin,
+        purchase.offerDetails.condition,
+        purchase.offerDetails.location,
+        purchase.offerDetails.description,
+        purchase.offerDetails.color,
+        `${purchase.offerDetails.make} ${purchase.offerDetails.model}`,
+        `${purchase.offerDetails.year} ${purchase.offerDetails.make}`,
+        `${purchase.offerDetails.year} ${purchase.offerDetails.make} ${purchase.offerDetails.model}`,
+      );
+    }
 
     return searchParts.join(' ').toLowerCase();
   }

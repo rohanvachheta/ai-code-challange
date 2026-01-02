@@ -1,26 +1,32 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Zap, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { UserContextForm } from '@/components/UserContextForm';
-import { SearchBarWithAutocomplete } from '@/components/SearchBarWithAutocomplete';
-// import { SearchFilter } from '@/components/SearchFilter';
+import { SmartSearchBar } from '@/components/SmartSearchBar';
+import { AISearchBar } from '@/components/AISearchBar';
 import { SearchResults } from '@/components/SearchResults';
+import { SearchFilter } from '@/components/SearchFilter';
 import { UserContext, SearchResponse, StatusFilter, SearchFilters } from '@/types/search';
 import { fetchSearchResults, fetchSearchResultsWithFilters } from '@/lib/api';
-import { SearchFilter } from '@/components/SearchFilter';
+import { testBackendAutocomplete } from '@/lib/backendAutocomplete';
 
 /**
- * Index Page - Centralized Search Platform
+ * Index Page - Centralized Search Platform with AI Enhancement
  * 
  * Main search interface for the automotive marketplace.
  * Provides role-based search with grouped results by entity type.
+ * Features AI-powered search with backend integration and local fallback.
  */
 const Index = () => {
   // User context state
   const [userContext, setUserContext] = useState<UserContext>({
-    userType: "AGENT",
-    accountId: "00000000-0000-0000-0000-000000000000",
-    userId: "",
+    userType: "BUYER",
+    accountId: "a1263bca-021b-4878-a1ce-a9988b845c45", // Priya Sharma - our test buyer
+    userId: "a1263bca-021b-4878-a1ce-a9988b845c45",
   });
 
   // Search state
@@ -46,25 +52,52 @@ const Index = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
 
+  // AI Feature flags
+  const [useAISearch, setUseAISearch] = useState(true);
+  const [aiBackendStatus, setAiBackendStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  const [showAISettings, setShowAISettings] = useState(false);
+
+  // Check AI backend status
+  useEffect(() => {
+    const checkAIBackend = async () => {
+      setAiBackendStatus('checking');
+      const isConnected = await testBackendAutocomplete();
+      setAiBackendStatus(isConnected ? 'connected' : 'disconnected');
+    };
+    
+    checkAIBackend();
+    
+    // Check periodically
+    const interval = setInterval(checkAIBackend, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Helper function to validate user context before search
   const isUserContextValid = (): boolean => {
-    // Account ID is required for seller, buyer, and carrier
-    if (userContext.userType !== "AGENT" && !userContext.accountId.trim()) {
-      return false;
+    // For AGENT users, account ID is optional
+    if (userContext.userType === "AGENT") {
+      return true;
     }
-    return true;
+    // For other user types, account ID is required but we'll be more lenient
+    // Allow search even if account ID is not a perfect UUID, as long as something is provided
+    return userContext.accountId && userContext.accountId.trim().length > 0;
   };
 
   // Handle search execution
   const handleSearch = async (query: string) => {
+    console.log('🔍 handleSearch called with query:', query);
+    console.log('🔍 Current userContext:', userContext);
+    
     // Validate user context before proceeding
     if (!isUserContextValid()) {
+      console.log('❌ User context validation failed');
       setSearchError(
-        `Account ID is required for ${userContext.userType.toLowerCase()} users. Please provide your account ID before searching.`
+        `Please select a user account before searching. Use the user search dropdown above to select your account.`
       );
       return;
     }
 
+    console.log('✅ User context validation passed');
     setCurrentQuery(query);
     setIsSearching(true);
     setSearchError(null);
@@ -72,8 +105,10 @@ const Index = () => {
     setCurrentPage(1);
 
     try {
+      console.log('🚀 Starting search API call...');
       let response;
       if (useAdvancedFilters) {
+        console.log('📊 Using advanced filters');
         // Use advanced filters with 5 results per page
         response = await fetchSearchResultsWithFilters(
           query,
@@ -82,6 +117,7 @@ const Index = () => {
           { page: 1, pageSize: 5 }
         );
       } else {
+        console.log('📄 Using legacy search');
         // Use legacy search
         response = await fetchSearchResults(
           query, 
@@ -90,9 +126,10 @@ const Index = () => {
           statusFilter
         );
       }
+      console.log('✅ Search API response received:', response);
       setSearchResponse(response);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('❌ Search error:', error);
       setSearchError(
         error instanceof Error 
           ? error.message 
@@ -230,15 +267,101 @@ const Index = () => {
 
         {/* Search Section */}
         <section className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4">
-            Search
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">
+              AI-Powered Search
+            </h2>
+            <div className="flex items-center gap-4">
+              {/* AI Status Badge */}
+              <Badge 
+                variant={aiBackendStatus === 'connected' ? 'default' : aiBackendStatus === 'disconnected' ? 'destructive' : 'secondary'}
+                className="flex items-center gap-1"
+              >
+                {aiBackendStatus === 'checking' && '⏳ Checking AI...'}
+                {aiBackendStatus === 'connected' && '🤖 AI Connected'}
+                {aiBackendStatus === 'disconnected' && '⚠️ AI Offline'}
+              </Badge>
+              
+              {/* AI Settings Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAISettings(!showAISettings)}
+                className="flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                AI Settings
+              </Button>
+            </div>
+          </div>
+
+          {/* AI Settings Panel */}
+          {showAISettings && (
+            <Card className="mb-4">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  AI Search Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="ai-search-toggle">Enhanced AI Search</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Use AI-powered search with fuzzy matching and backend integration
+                    </p>
+                  </div>
+                  <Switch
+                    id="ai-search-toggle"
+                    checked={useAISearch}
+                    onCheckedChange={setUseAISearch}
+                  />
+                </div>
+                
+                <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <strong>AI Search Features:</strong>
+                      <ul className="mt-1 space-y-1">
+                        <li>• Backend Elasticsearch fuzzy search</li>
+                        <li>• Enhanced typo tolerance</li>
+                        <li>• Smart VIN/Make/Model detection</li>
+                        <li>• Real-time relevance scoring</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <strong>Fallback Features:</strong>
+                      <ul className="mt-1 space-y-1">
+                        <li>• Local pattern matching</li>
+                        <li>• Phone number detection</li>
+                        <li>• Location-based suggestions</li>
+                        <li>• Offline capability</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="flex gap-2">
-            <SearchBarWithAutocomplete
-              userContext={userContext}
-              onSearch={handleSearch}
-              isSearching={isSearching}
-            />
+            {/* Conditional Search Bar Based on Feature Flag */}
+            {useAISearch ? (
+              <AISearchBar
+                userContext={userContext}
+                onSearch={handleSearch}
+                isSearching={isSearching}
+                className="flex-1"
+              />
+            ) : (
+              <SmartSearchBar
+                userContext={userContext}
+                onSearch={handleSearch}
+                isSearching={isSearching}
+              />
+            )}
+            
             <Button
               onClick={() => setShowFilterSection(!showFilterSection)}
               variant={showFilterSection ? "default" : "outline"}

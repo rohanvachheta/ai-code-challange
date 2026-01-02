@@ -1,0 +1,286 @@
+{
+  "state": {
+    "isStdOutTTY": true,
+    "isStdErrTTY": true,
+    "testRunDurationMs": 31595.761
+  },
+  "metrics": {
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 0,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0.0105,
+        "max": 0.186,
+        "p(90)": 0.119,
+        "p(95)": 0.13665,
+        "avg": 0.04387619047619047,
+        "min": 0
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 506.258708,
+        "med": 1470.7573745,
+        "max": 2492.967125,
+        "p(90)": 2295.8601452,
+        "p(95)": 2434.63231615,
+        "avg": 1469.0760134238096
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 210,
+        "rate": 6.646461213578619
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "min": 0,
+        "med": 0.59,
+        "max": 62.456,
+        "p(90)": 6.109100000000001,
+        "p(95)": 11.551449999999988,
+        "avg": 4.004976190476191
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 210,
+        "rate": 6.646461213578619
+      }
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.15431428571428574,
+        "min": 0,
+        "med": 0,
+        "max": 2.788,
+        "p(90)": 0.4921,
+        "p(95)": 0.55155
+      }
+    },
+    "http_req_failed": {
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 210,
+        "fails": 0
+      },
+      "type": "rate"
+    },
+    "http_req_sending": {
+      "contains": "time",
+      "values": {
+        "avg": 0.05133809523809525,
+        "min": 0,
+        "med": 0.005,
+        "max": 1.07,
+        "p(90)": 0.067,
+        "p(95)": 0.09264999999999997
+      },
+      "type": "trend"
+    },
+    "data_received": {
+      "values": {
+        "count": 38325,
+        "rate": 1212.979171478098
+      },
+      "type": "counter",
+      "contains": "data"
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 10,
+        "min": 10,
+        "max": 10
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0.536,
+        "max": 61.413,
+        "p(90)": 5.959899999999999,
+        "p(95)": 11.390549999999989,
+        "avg": 3.909761904761905,
+        "min": 0
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0.0015,
+        "max": 2.88,
+        "p(90)": 0.615,
+        "p(95)": 0.7788999999999993,
+        "avg": 0.2109000000000001,
+        "min": 0
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 4,
+        "min": 4,
+        "max": 10
+      }
+    },
+    "data_sent": {
+      "contains": "data",
+      "values": {
+        "count": 7980,
+        "rate": 252.56552611598752
+      },
+      "type": "counter"
+    },
+    "checks": {
+      "contains": "default",
+      "values": {
+        "rate": 0.75,
+        "passes": 315,
+        "fails": 105
+      },
+      "type": "rate"
+    }
+  },
+  "root_group": {
+    "groups": [],
+    "checks": [
+        {
+          "id": "cb1f6679011bdd9c7617ff5f3841e894",
+          "passes": 41,
+          "fails": 0,
+          "name": "Search API Test - status is 200 or expected connection error",
+          "path": "::Search API Test - status is 200 or expected connection error"
+        },
+        {
+          "name": "Autocomplete Test - status is 200 or expected connection error",
+          "path": "::Autocomplete Test - status is 200 or expected connection error",
+          "id": "3c70628b239ed59315921ef94120780c",
+          "passes": 20,
+          "fails": 0
+        },
+        {
+          "id": "0c43d5f4d9dc44c13f73efd12eef29bc",
+          "passes": 41,
+          "fails": 0,
+          "name": "Search API Test - response time < 3s",
+          "path": "::Search API Test - response time < 3s"
+        },
+        {
+          "name": "Autocomplete Test - response time < 3s",
+          "path": "::Autocomplete Test - response time < 3s",
+          "id": "39bae92f0575c3dca32dc961c457133f",
+          "passes": 20,
+          "fails": 0
+        },
+        {
+          "passes": 44,
+          "fails": 0,
+          "name": "Search Service Health - status is 200 or expected connection error",
+          "path": "::Search Service Health - status is 200 or expected connection error",
+          "id": "0ad70c986b160219aa06ae81cd5b66dc"
+        },
+        {
+          "name": "Search Service Health - response time < 3s",
+          "path": "::Search Service Health - response time < 3s",
+          "id": "beb5d85b6c92cf719eca721fdcf10b0f",
+          "passes": 44,
+          "fails": 0
+        },
+        {
+          "id": "002918aab58c17d5fb2bd0335ea60c4f",
+          "passes": 0,
+          "fails": 35,
+          "name": "Offer Service Health - status is 200 or expected connection error",
+          "path": "::Offer Service Health - status is 200 or expected connection error"
+        },
+        {
+          "name": "Offer Service Health - response time < 3s",
+          "path": "::Offer Service Health - response time < 3s",
+          "id": "a38b6477282e3a5aa41ba7663e531e50",
+          "passes": 35,
+          "fails": 0
+        },
+        {
+          "passes": 0,
+          "fails": 37,
+          "name": "Purchase Service Health - status is 200 or expected connection error",
+          "path": "::Purchase Service Health - status is 200 or expected connection error",
+          "id": "e36c291c240995196f1d0d438e9ed3ca"
+        },
+        {
+          "id": "94602faae462e703a99734a4aa67b5cc",
+          "passes": 37,
+          "fails": 0,
+          "name": "Purchase Service Health - response time < 3s",
+          "path": "::Purchase Service Health - response time < 3s"
+        },
+        {
+          "fails": 33,
+          "name": "Transport Service Health - status is 200 or expected connection error",
+          "path": "::Transport Service Health - status is 200 or expected connection error",
+          "id": "afa2036aa0e0ccda9427f9d55057bd44",
+          "passes": 0
+        },
+        {
+          "passes": 33,
+          "fails": 0,
+          "name": "Transport Service Health - response time < 3s",
+          "path": "::Transport Service Health - response time < 3s",
+          "id": "dac01ecfc937770b041eba14d10ab933"
+        }
+      ],
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "summary": {
+    "duration": 31.595761,
+    "maxVUs": 10,
+    "totalRequests": 210,
+    "requestRate": "6.65",
+    "avgResponseTime": "4.00",
+    "p95ResponseTime": "11.55",
+    "successRate": "75.00"
+  }
+}

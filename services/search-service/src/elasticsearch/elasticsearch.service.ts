@@ -34,6 +34,19 @@ export interface GlobalSearchDocument {
   deliveryLocation?: string;
   scheduledPickupDate?: string;
   scheduledDeliveryDate?: string;
+  // User details
+  sellerDetails?: {
+    fullName: string;
+    email: string;
+    phone: string;
+    userType: string;
+  };
+  buyerDetails?: {
+    fullName: string;
+    email: string;
+    phone: string;
+    userType: string;
+  };
 }
 
 @Injectable()
@@ -126,7 +139,15 @@ export class ElasticsearchService implements OnModuleInit {
               validUntil: { type: 'date' },
               completedAt: { type: 'date' },
               scheduledPickupDate: { type: 'date' },
-              scheduledDeliveryDate: { type: 'date' }
+              scheduledDeliveryDate: { type: 'date' },
+              permissions: {
+                type: 'object',
+                properties: {
+                  sellerIds: { type: 'keyword' },
+                  buyerIds: { type: 'keyword' },
+                  carrierIds: { type: 'keyword' }
+                }
+              }
             }
           }
         });

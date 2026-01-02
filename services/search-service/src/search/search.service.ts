@@ -206,7 +206,7 @@ export class SearchService {
         filter.push({
           bool: {
             should: [
-              { term: { 'permissions.sellerIds': accountId } },
+              { term: { 'permissions.sellerIds.keyword': accountId } },
               { term: { sellerId: accountId } }
             ]
           }
@@ -220,7 +220,7 @@ export class SearchService {
         filter.push({
           bool: {
             should: [
-              { term: { 'permissions.buyerIds': accountId } },
+              { term: { 'permissions.buyerIds.keyword': accountId } },
               { term: { buyerId: accountId } },
               { 
                 bool: {
@@ -242,7 +242,7 @@ export class SearchService {
         filter.push({
           bool: {
             should: [
-              { term: { 'permissions.carrierIds': accountId } },
+              { term: { 'permissions.carrierIds.keyword': accountId } },
               { term: { carrierId: accountId } }
             ]
           }
@@ -347,63 +347,223 @@ export class SearchService {
   async autocomplete(query: AutocompleteQueryDto): Promise<AutocompleteResult> {
     try {
       const client = this.elasticsearchService.getClient();
+      const searchText = query.searchText.toLowerCase();
       
-      // Use suggest API for better autocomplete
+      // Enhanced search with fuzzy matching and better scoring
       const response = await client.search({
         index: this.elasticsearchService.getIndexName(),
         body: {
           size: 0,
-          suggest: {
-            text_suggest: {
-              prefix: query.searchText,
-              completion: {
-                field: 'searchableText',
-                size: query.limit,
-                skip_duplicates: true
-              }
+          query: {
+            bool: {
+              should: [
+                // Exact phrase match (highest priority)
+                {
+                  multi_match: {
+                    query: searchText,
+                    fields: ['make.keyword^4', 'model.keyword^4', 'vin.keyword^3'],
+                    type: 'phrase',
+                    boost: 5
+                  }
+                },
+                // Prefix match (high priority)
+                {
+                  multi_match: {
+                    query: searchText,
+                    fields: ['make^3', 'model^3', 'vin^2'],
+                    type: 'phrase_prefix',
+                    boost: 4
+                  }
+                },
+                // Fuzzy match for typos (medium priority)
+                {
+                  multi_match: {
+                    query: searchText,
+                    fields: ['make^2', 'model^2', 'vin^1.5'],
+                    fuzziness: 'AUTO',
+                    boost: 3
+                  }
+                },
+                // Wildcard for partial matches
+                {
+                  wildcard: {
+                    'make.keyword': {
+                      value: `*${searchText}*`,
+                      case_insensitive: true,
+                      boost: 2
+                    }
+                  }
+                },
+                {
+                  wildcard: {
+                    'model.keyword': {
+                      value: `*${searchText}*`,
+                      case_insensitive: true,
+                      boost: 2
+                    }
+                  }
+                },
+                {
+                  wildcard: {
+                    'vin.keyword': {
+                      value: `*${searchText.toUpperCase()}*`,
+                      case_insensitive: true,
+                      boost: 1.5
+                    }
+                  }
+                },
+                // Search in searchableText for broader matches
+                {
+                  match: {
+                    searchableText: {
+                      query: searchText,
+                      fuzziness: 'AUTO',
+                      boost: 1
+                    }
+                  }
+                }
+              ],
+              minimum_should_match: 1
             }
           },
           aggs: {
             makes: {
               terms: {
                 field: 'make.keyword',
-                include: `.*${query.searchText}.*`,
-                size: query.limit
+                size: query.limit,
+                order: { _count: 'desc' }
               }
             },
             models: {
               terms: {
                 field: 'model.keyword',
-                include: `.*${query.searchText}.*`,
-                size: query.limit
+                size: query.limit,
+                order: { _count: 'desc' }
+              }
+            },
+            vins: {
+              terms: {
+                field: 'vin.keyword',
+                size: Math.min(query.limit, 5), // Limit VINs as they are specific
+                order: { _count: 'desc' }
+              }
+            },
+            locations: {
+              terms: {
+                field: 'location.keyword',
+                size: Math.min(query.limit, 3), // Limit locations
+                order: { _count: 'desc' }
               }
             }
           }
         }
       });
 
-      const suggestions = new Set<string>();
+      const suggestions: Array<{
+        text: string;
+        type: string;
+        count: number;
+        score: number;
+      }> = [];
 
-      // Add term suggestions from aggregations
-      if (response.aggregations?.makes && 'buckets' in response.aggregations.makes) {
-        (response.aggregations.makes as any).buckets.forEach((bucket: any) => {
-          suggestions.add(bucket.key);
+      // Add suggestions with type and relevance scoring
+      const addSuggestions = (buckets: any[], type: string, baseScore: number) => {
+        buckets.forEach((bucket: any) => {
+          const text = bucket.key.toLowerCase();
+          const searchLower = searchText.toLowerCase();
+          
+          // Calculate relevance score based on match quality
+          let score = baseScore;
+          
+          if (text === searchLower) {
+            score += 50; // Exact match bonus
+          } else if (text.startsWith(searchLower)) {
+            score += 30; // Prefix match bonus
+          } else if (text.includes(searchLower)) {
+            score += 20; // Contains match bonus
+          } else {
+            // Fuzzy match - calculate similarity
+            const similarity = this.calculateStringSimilarity(searchLower, text);
+            score += Math.round(similarity * 15);
+          }
+          
+          suggestions.push({
+            text: bucket.key,
+            type,
+            count: bucket.doc_count,
+            score
+          });
         });
+      };
+
+      // Process aggregation results with different base scores
+      if (response.aggregations?.makes && 'buckets' in response.aggregations.makes) {
+        addSuggestions((response.aggregations.makes as any).buckets, 'make', 100);
       }
 
       if (response.aggregations?.models && 'buckets' in response.aggregations.models) {
-        (response.aggregations.models as any).buckets.forEach((bucket: any) => {
-          suggestions.add(bucket.key);
-        });
+        addSuggestions((response.aggregations.models as any).buckets, 'model', 90);
       }
 
+      if (response.aggregations?.vins && 'buckets' in response.aggregations.vins) {
+        addSuggestions((response.aggregations.vins as any).buckets, 'vin', 110); // VINs get highest priority
+      }
+
+      if (response.aggregations?.locations && 'buckets' in response.aggregations.locations) {
+        addSuggestions((response.aggregations.locations as any).buckets, 'location', 80);
+      }
+
+      // Sort by relevance score and remove duplicates
+      const uniqueSuggestions = suggestions
+        .sort((a, b) => b.score - a.score)
+        .filter((suggestion, index, self) => 
+          index === self.findIndex(s => s.text.toLowerCase() === suggestion.text.toLowerCase())
+        )
+        .slice(0, query.limit);
+
       return {
-        suggestions: Array.from(suggestions).slice(0, query.limit)
+        suggestions: uniqueSuggestions.map(s => s.text)
       };
     } catch (error) {
       console.error('Autocomplete error:', error);
       return { suggestions: [] };
     }
+  }
+
+  // Helper method for string similarity calculation
+  private calculateStringSimilarity(str1: string, str2: string): number {
+    if (str1 === str2) return 1;
+    if (str1.length === 0 || str2.length === 0) return 0;
+    
+    const maxLength = Math.max(str1.length, str2.length);
+    const distance = this.levenshteinDistance(str1, str2);
+    return 1 - (distance / maxLength);
+  }
+
+  // Levenshtein distance calculation for fuzzy matching
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i += 1) {
+      matrix[0][i] = i;
+    }
+    
+    for (let j = 0; j <= str2.length; j += 1) {
+      matrix[j][0] = j;
+    }
+    
+    for (let j = 1; j <= str2.length; j += 1) {
+      for (let i = 1; i <= str1.length; i += 1) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1, // deletion
+          matrix[j - 1][i] + 1, // insertion
+          matrix[j - 1][i - 1] + indicator, // substitution
+        );
+      }
+    }
+    
+    return matrix[str2.length][str1.length];
   }
 
   async getStatistics(): Promise<any> {

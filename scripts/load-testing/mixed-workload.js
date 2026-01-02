@@ -63,71 +63,93 @@ const PURCHASE_SERVICE_URL = __ENV.PURCHASE_SERVICE_URL || 'http://localhost:300
 const TRANSPORT_SERVICE_URL = __ENV.TRANSPORT_SERVICE_URL || 'http://localhost:3003';
 const SEARCH_SERVICE_URL = __ENV.SEARCH_SERVICE_URL || 'http://localhost:3000';
 
-// Enhanced data generators for more realistic load testing
+// Parse environment variables for configuration
+const USERS = parseInt(__ENV.USERS || '25');
+const OFFERS = parseInt(__ENV.OFFERS || '100');
+const PURCHASES = parseInt(__ENV.PURCHASES || '75');
+const TRANSPORTS = parseInt(__ENV.TRANSPORTS || '50');
+const TEST_DURATION = __ENV.TEST_DURATION || '15m';
+
+console.log(`🧪 Mixed Workload Configuration:`);
+console.log(`   Users: ${USERS}`);
+console.log(`   Offers: ${OFFERS}`);
+console.log(`   Purchases: ${PURCHASES}`);
+console.log(`   Transports: ${TRANSPORTS}`);
+console.log(`   Duration: ${TEST_DURATION}`);
+
+// Enhanced data generators for Indian automotive marketplace
 const vehicleDatabase = {
   makes: [
-    'Toyota', 'Honda', 'Ford', 'Chevrolet', 'BMW', 'Mercedes-Benz', 'Audi', 'Nissan', 
-    'Hyundai', 'Kia', 'Volkswagen', 'Subaru', 'Mazda', 'Lexus', 'Acura', 'Infiniti',
-    'Cadillac', 'Lincoln', 'Buick', 'GMC', 'Ram', 'Jeep', 'Chrysler', 'Dodge',
-    'Tesla', 'Porsche', 'Land Rover', 'Jaguar', 'Volvo', 'Mini', 'Mitsubishi'
+    'Maruti Suzuki', 'Hyundai', 'Tata', 'Mahindra', 'Toyota', 'Honda',
+    'Kia', 'Nissan', 'Ford', 'Volkswagen', 'Skoda', 'Mercedes-Benz',
+    'BMW', 'Audi', 'Jeep', 'MG', 'Renault'
   ],
-  models: [
-    'Sedan', 'SUV', 'Truck', 'Coupe', 'Hatchback', 'Convertible', 'Wagon', 'Crossover',
-    'Pickup', 'Van', 'Minivan', 'Sports Car', 'Luxury', 'Compact', 'Mid-size', 'Full-size'
-  ],
+  models: {
+    'Maruti Suzuki': ['Swift', 'Baleno', 'Wagon R', 'Alto', 'Dzire', 'Ertiga', 'Vitara Brezza'],
+    'Hyundai': ['i20', 'Creta', 'Verna', 'Venue', 'Santro', 'Grand i10', 'Tucson'],
+    'Tata': ['Nexon', 'Harrier', 'Safari', 'Altroz', 'Tigor', 'Punch'],
+    'Toyota': ['Innova', 'Fortuner', 'Camry', 'Corolla', 'Glanza'],
+    'Honda': ['City', 'Amaze', 'Jazz', 'WR-V', 'Civic', 'CR-V'],
+    'Mercedes-Benz': ['C-Class', 'E-Class', 'S-Class', 'GLC', 'GLE'],
+    'BMW': ['3 Series', '5 Series', 'X1', 'X3', 'X5'],
+    'Audi': ['A4', 'A6', 'Q3', 'Q5', 'Q7']
+  },
   conditions: ['NEW', 'USED', 'CERTIFIED_PRE_OWNED'],
   statuses: ['ACTIVE', 'SOLD', 'PENDING', 'RESERVED'],
-  colors: ['Black', 'White', 'Silver', 'Gray', 'Red', 'Blue', 'Green', 'Brown', 'Gold', 'Yellow'],
+  colors: ['Black', 'White', 'Silver', 'Gray', 'Red', 'Blue', 'Green'],
   cities: [
-    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio',
-    'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Fort Worth', 'Columbus',
-    'Charlotte', 'Seattle', 'Denver', 'Boston', 'El Paso', 'Detroit', 'Nashville', 'Portland',
-    'Memphis', 'Oklahoma City', 'Las Vegas', 'Louisville', 'Baltimore', 'Milwaukee', 'Albuquerque'
+    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata',
+    'Pune', 'Ahmedabad', 'Jaipur', 'Surat', 'Lucknow', 'Kanpur',
+    'Nagpur', 'Indore', 'Thane', 'Bhopal', 'Visakhapatnam'
   ]
 };
 
-// Realistic search queries based on automotive marketplace behavior
+// Realistic search queries based on Indian automotive marketplace behavior
 const searchQueries = [
-  // Make-based searches
-  'Toyota', 'Honda', 'Ford', 'BMW', 'Mercedes', 'Chevrolet', 'Tesla',
+  // Popular Indian car makes
+  'Maruti Suzuki', 'Hyundai', 'Tata', 'Toyota', 'Honda', 'Mahindra',
   
   // Model-specific searches
-  'Toyota Camry', 'Honda Civic', 'Ford F-150', 'BMW 3 Series', 'Tesla Model 3',
-  'Chevrolet Silverado', 'Honda Accord', 'Toyota RAV4', 'Ford Escape', 'Nissan Altima',
+  'Maruti Swift', 'Hyundai Creta', 'Tata Nexon', 'Toyota Innova', 'Honda City',
+  'Hyundai i20', 'Maruti Baleno', 'Tata Harrier', 'Toyota Fortuner', 'Honda Amaze',
   
   // Year-specific searches
-  '2022 Toyota', '2021 Honda', '2020 BMW', '2023 Ford', '2019 Mercedes',
+  '2022 Maruti', '2021 Hyundai', '2020 Tata', '2023 Toyota', '2019 Honda',
   
   // Category searches
-  'SUV', 'Truck', 'Sedan', 'Crossover', 'Luxury', 'Sports Car', 'Compact',
+  'SUV', 'Hatchback', 'Sedan', 'Compact', 'Luxury', 'Premium',
   
   // Location-based searches
-  'cars in New York', 'vehicles in California', 'trucks in Texas',
+  'cars in Mumbai', 'vehicles in Delhi', 'cars in Bangalore',
+  'cars in Hyderabad', 'vehicles in Chennai', 'cars in Pune',
   
   // Condition searches
-  'new cars', 'used vehicles', 'certified pre-owned',
+  'new cars', 'used cars', 'second hand cars', 'certified pre-owned',
   
-  // Price-range searches (simulated with generic terms)
-  'affordable', 'luxury', 'budget', 'premium', 'economy',
+  // Price-range searches (Indian context)
+  'affordable cars', 'budget cars', 'luxury cars', 'premium cars',
+  'cars under 10 lakh', 'cars under 5 lakh',
   
   // Color searches
-  'black BMW', 'white Toyota', 'red Ford', 'blue Honda',
+  'white Maruti', 'black Hyundai', 'silver Toyota', 'red Honda',
+  
+  // Fuel type searches
+  'petrol cars', 'diesel cars', 'CNG cars', 'electric cars',
   
   // Status searches
-  'available', 'for sale', 'in stock',
+  'available cars', 'for sale', 'in stock',
   
   // Partial matches for autocomplete testing
-  'Toy', 'Hon', 'For', 'BM', 'Mer', 'Che', 'Tes',
+  'Mar', 'Hyu', 'Tat', 'Toy', 'Hon', 'Mah',
 ];
 
 function generateVIN() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const excludeChars = 'IOQ'; // VIN standard excludes I, O, Q
-  const validChars = chars.split('').filter(c => !excludeChars.includes(c)).join('');
+  const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
+  // VIN standard excludes I, O, Q to avoid confusion
   
   let vin = '';
   for (let i = 0; i < 17; i++) {
-    vin += validChars[Math.floor(Math.random() * validChars.length)];
+    vin += chars[Math.floor(Math.random() * chars.length)];
   }
   return vin;
 }
@@ -142,12 +164,41 @@ function generateUUID() {
 
 function generateRealisticOfferData() {
   const make = vehicleDatabase.makes[Math.floor(Math.random() * vehicleDatabase.makes.length)];
-  const modelType = vehicleDatabase.models[Math.floor(Math.random() * vehicleDatabase.models.length)];
+  const models = vehicleDatabase.models[make] || ['Sedan', 'Hatchback', 'SUV'];
+  const model = models[Math.floor(Math.random() * models.length)];
   const year = 2015 + Math.floor(Math.random() * 9); // 2015-2023
   
-  // Price based on year and make (more realistic pricing)
-  let basePrice = 15000;
-  if (['BMW', 'Mercedes-Benz', 'Audi', 'Lexus', 'Tesla', 'Porsche'].includes(make)) {
+  // Price based on Indian market (in INR)
+  let basePrice = 500000; // 5 lakh base
+  if (['Mercedes-Benz', 'BMW', 'Audi'].includes(make)) {
+    basePrice = 3000000; // 30 lakh for luxury brands
+  } else if (['Toyota', 'Honda'].includes(make)) {
+    basePrice = 1000000; // 10 lakh for premium brands
+  } else if (['Maruti Suzuki', 'Tata'].includes(make)) {
+    basePrice = 600000; // 6 lakh for popular brands
+  }
+  
+  // Depreciation factor
+  const ageFactor = (2024 - year) * 0.1;
+  const finalPrice = Math.round(basePrice * (1 - ageFactor) * (0.8 + Math.random() * 0.4));
+  
+  return {
+    sellerId: generateUUID(),
+    vin: generateVIN(),
+    make,
+    model,
+    year,
+    price: Math.max(finalPrice, 200000), // Minimum 2 lakh
+    condition: vehicleDatabase.conditions[Math.floor(Math.random() * vehicleDatabase.conditions.length)],
+    status: vehicleDatabase.statuses[Math.floor(Math.random() * vehicleDatabase.statuses.length)],
+    color: vehicleDatabase.colors[Math.floor(Math.random() * vehicleDatabase.colors.length)],
+    location: vehicleDatabase.cities[Math.floor(Math.random() * vehicleDatabase.cities.length)],
+    description: `${year} ${make} ${model} in excellent condition. Well maintained vehicle.`,
+    mileage: Math.floor(Math.random() * 100000) + 10000, // 10K-110K km
+    fuelType: ['Petrol', 'Diesel', 'CNG', 'Electric'][Math.floor(Math.random() * 4)],
+    transmission: ['Manual', 'Automatic'][Math.floor(Math.random() * 2)],
+  };
+}
     basePrice = 35000;
   } else if (['Toyota', 'Honda', 'Mazda', 'Subaru'].includes(make)) {
     basePrice = 20000;

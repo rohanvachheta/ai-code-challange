@@ -35,7 +35,7 @@ const SEARCH_SERVICE_URL = __ENV.SEARCH_SERVICE_URL || 'http://localhost:3000';
 
 // Sample data generators
 function generateVIN() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
   let vin = '';
   for (let i = 0; i < 17; i++) {
     vin += chars[Math.floor(Math.random() * chars.length)];
@@ -51,44 +51,97 @@ function generateUUID() {
   });
 }
 
-const carMakes = ['Toyota', 'Honda', 'Ford', 'BMW', 'Mercedes', 'Chevrolet', 'Nissan', 'Audi'];
-const carModels = ['Sedan', 'SUV', 'Truck', 'Coupe', 'Hatchback', 'Convertible'];
+const indianCarMakes = [
+  'Maruti Suzuki', 'Hyundai', 'Tata', 'Mahindra', 'Toyota', 'Honda',
+  'Kia', 'Nissan', 'Ford', 'Mercedes-Benz', 'BMW', 'Audi'
+];
+
+const modelsByMake = {
+  'Maruti Suzuki': ['Swift', 'Baleno', 'Wagon R', 'Alto', 'Dzire'],
+  'Hyundai': ['i20', 'Creta', 'Verna', 'Venue', 'Santro'],
+  'Tata': ['Nexon', 'Harrier', 'Safari', 'Altroz', 'Tigor'],
+  'Toyota': ['Innova', 'Fortuner', 'Camry', 'Corolla'],
+  'Honda': ['City', 'Amaze', 'Jazz', 'WR-V', 'Civic'],
+  'Mercedes-Benz': ['C-Class', 'E-Class', 'GLC', 'GLE'],
+  'BMW': ['3 Series', 'X1', 'X3', 'X5'],
+  'Audi': ['A4', 'A6', 'Q3', 'Q5', 'Q7']
+};
+
 const conditions = ['NEW', 'USED', 'CERTIFIED_PRE_OWNED'];
 const statuses = ['ACTIVE', 'SOLD', 'PENDING'];
+const indianCities = [
+  'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata',
+  'Pune', 'Ahmedabad', 'Jaipur', 'Surat'
+];
+const indianNames = [
+  'Rajesh Kumar', 'Priya Sharma', 'Amit Singh', 'Sneha Gupta', 'Vikram Patel',
+  'Kavya Nair', 'Rohit Verma', 'Anita Reddy'
+];
 
 function generateOfferData() {
+  const make = indianCarMakes[Math.floor(Math.random() * indianCarMakes.length)];
+  const models = modelsByMake[make] || ['Sedan', 'Hatchback'];
+  const model = models[Math.floor(Math.random() * models.length)];
+  const year = 2015 + Math.floor(Math.random() * 9);
+  const name = indianNames[Math.floor(Math.random() * indianNames.length)];
+  const timestamp = Date.now();
+  
+  // Realistic Indian pricing (in INR)
+  let basePrice = 500000; // 5 lakh base
+  if (['Mercedes-Benz', 'BMW', 'Audi'].includes(make)) {
+    basePrice = 3000000; // 30 lakh for luxury
+  } else if (['Toyota', 'Honda'].includes(make)) {
+    basePrice = 1000000; // 10 lakh for premium
+  }
+  
+  const ageFactor = (2024 - year) * 0.1;
+  const price = Math.round(basePrice * (1 - ageFactor) * (0.8 + Math.random() * 0.4));
+  
   return {
     sellerId: generateUUID(),
     vin: generateVIN(),
-    make: carMakes[Math.floor(Math.random() * carMakes.length)],
-    model: `${carModels[Math.floor(Math.random() * carModels.length)]} ${Math.floor(Math.random() * 10) + 1}`,
-    year: 2015 + Math.floor(Math.random() * 9),
-    price: 15000 + Math.floor(Math.random() * 50000),
+    make,
+    model,
+    year,
+    price: Math.max(price, 200000), // Minimum 2 lakh
     condition: conditions[Math.floor(Math.random() * conditions.length)],
     status: statuses[Math.floor(Math.random() * statuses.length)],
-    description: 'Test vehicle for load testing',
-    location: `Test City ${Math.floor(Math.random() * 100)}`,
+    description: `${year} ${make} ${model} in excellent condition`,
+    location: indianCities[Math.floor(Math.random() * indianCities.length)],
+    sellerEmail: `${name.toLowerCase().replace(' ', '.')}.${timestamp}@example.com`
   };
 }
 
 function generatePurchaseData(offerId) {
+  const name = indianNames[Math.floor(Math.random() * indianNames.length)];
+  const timestamp = Date.now();
+  const city = indianCities[Math.floor(Math.random() * indianCities.length)];
+  
   return {
     buyerId: generateUUID(),
     offerId: offerId,
-    totalAmount: 25000 + Math.floor(Math.random() * 30000),
+    totalAmount: 500000 + Math.floor(Math.random() * 2500000), // 5-30 lakh INR
     paymentMethod: ['CASH', 'FINANCING', 'LEASE'][Math.floor(Math.random() * 3)],
     status: 'PENDING',
+    buyerEmail: `${name.toLowerCase().replace(' ', '.')}.${timestamp}@example.com`,
+    deliveryAddress: `Test Street, ${city}`
   };
 }
 
 function generateTransportData(purchaseId) {
+  const pickupCity = indianCities[Math.floor(Math.random() * indianCities.length)];
+  const deliveryCity = indianCities[Math.floor(Math.random() * indianCities.length)];
+  const transportTypes = ['SINGLE_CAR', 'OPEN_TRAILER', 'ENCLOSED_TRAILER', 'FLATBED'];
+  
   return {
     carrierId: generateUUID(),
     purchaseId: purchaseId,
-    pickupLocation: `Pickup City ${Math.floor(Math.random() * 50)}`,
-    deliveryLocation: `Delivery City ${Math.floor(Math.random() * 50)}`,
+    pickupLocation: pickupCity,
+    deliveryLocation: deliveryCity,
     scheduledPickup: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
     scheduledDelivery: new Date(Date.now() + Math.random() * 45 * 24 * 60 * 60 * 1000).toISOString(),
+    transportType: transportTypes[Math.floor(Math.random() * transportTypes.length)],
+    transportCost: 5000 + Math.floor(Math.random() * 20000), // 5K-25K INR
     status: 'SCHEDULED',
   };
 }

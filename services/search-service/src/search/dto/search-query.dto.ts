@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsUUID, IsString, IsOptional, IsNumber, Min, Max, ValidateIf } from 'class-validator';
+import { IsEnum, IsString, IsOptional, IsNumber, Min, Max, ValidateIf, IsUUID } from 'class-validator';
 
 export enum UserType {
   SELLER = 'SELLER',
@@ -18,7 +18,6 @@ export class SearchQueryDto {
     required: false 
   })
   @ValidateIf(o => o.userType !== UserType.AGENT)
-  @IsUUID('4', { message: 'Account ID must be a valid UUID' })
   @IsOptional()
   @IsString()
   accountId?: string;

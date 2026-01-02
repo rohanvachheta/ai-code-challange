@@ -684,6 +684,54 @@ export const DUMMY_OFFERS: OfferResult[] = [
     condition: "certified",
     status: "sold",
   },
+  {
+    id: "o21",
+    entityType: "offer",
+    vin: "21HGBH41JXMN109200",
+    make: "Toyota",
+    model: "RAV4",
+    year: 2023,
+    price: 32000,
+    location: "Boston, MA",
+    condition: "new",
+    status: "available",
+  },
+  {
+    id: "o22",
+    entityType: "offer",
+    vin: "22HGBH41JXMN109201",
+    make: "Toyota",
+    model: "Corolla",
+    year: 2023,
+    price: 24500,
+    location: "San Diego, CA",
+    condition: "new",
+    status: "available",
+  },
+  {
+    id: "o23",
+    entityType: "offer",
+    vin: "23HGBH41JXMN109202",
+    make: "Toyota",
+    model: "Prius",
+    year: 2023,
+    price: 28000,
+    location: "Portland, OR",
+    condition: "certified",
+    status: "available",
+  },
+  {
+    id: "o24",
+    entityType: "offer",
+    vin: "24HGBH41JXMN109203",
+    make: "Toyota",
+    model: "Highlander",
+    year: 2023,
+    price: 38500,
+    location: "Las Vegas, NV",
+    condition: "new",
+    status: "available",
+  },
 ];
 // Comprehensive dummy purchases data
 export const DUMMY_PURCHASES: PurchaseResult[] = [
@@ -861,6 +909,12 @@ export function filterOffersByQuery(
   query: string
 ): OfferResult[] {
   if (!query.trim()) return offers;
+  
+  // Handle global search wildcard
+  if (query.trim() === '*') {
+    console.log('🌐 Global search: returning all offers');
+    return offers;
+  }
 
   return offers.filter((offer) => {
     const searchableText = [
@@ -887,6 +941,12 @@ export function filterPurchasesByQuery(
   query: string
 ): PurchaseResult[] {
   if (!query.trim()) return purchases;
+  
+  // Handle global search wildcard
+  if (query.trim() === '*') {
+    console.log('🌐 Global search: returning all purchases');
+    return purchases;
+  }
 
   return purchases.filter((purchase) => {
     const searchableText = [
@@ -913,6 +973,12 @@ export function filterTransportsByQuery(
   query: string
 ): TransportResult[] {
   if (!query.trim()) return transports;
+  
+  // Handle global search wildcard
+  if (query.trim() === '*') {
+    console.log('🌐 Global search: returning all transports');
+    return transports;
+  }
 
   return transports.filter((transport) => {
     const searchableText = [
@@ -1093,44 +1159,60 @@ export function filterByUserContext(
   purchases: PurchaseResult[];
   transports: TransportResult[];
 } {
+  console.log('🔍 filterByUserContext called with:', { 
+    offersCount: offers.length, 
+    purchasesCount: purchases.length, 
+    transportsCount: transports.length, 
+    userType: userContext.userType 
+  });
+  
   // In a real backend, filtering would be based on accountId and userId
   // For demo purposes, we simulate role-based filtering
 
-  switch (userContext.userType) {
+  switch (userContext.userType.toLowerCase()) {
     case "seller":
       // Sellers only see their own offers
       // In production, this would filter by accountId/userId
-      return {
+      const sellerResult = {
         offers: offers.filter((_, index) => index < 5), // Simulate seller's own offers
         purchases: [],
         transports: [],
       };
+      console.log('🏪 SELLER filtered results:', sellerResult);
+      return sellerResult;
 
     case "buyer":
       // Buyers see available offers and their purchase history
-      return {
+      const buyerResult = {
         offers: offers.filter((o) => o.status === "available"),
         purchases: purchases.filter((_, index) => index < 3), // Simulate buyer's purchases
         transports: [],
       };
+      console.log('👤 BUYER filtered results:', buyerResult);
+      return buyerResult;
 
     case "carrier":
       // Carriers see their transport assignments
-      return {
+      const carrierResult = {
         offers: [],
         purchases: [],
         transports: transports.filter((_, index) => index < 4), // Simulate carrier's transports
       };
+      console.log('🚛 CARRIER filtered results:', carrierResult);
+      return carrierResult;
 
     case "agent":
       // Agents see everything
-      return {
+      const agentResult = {
         offers,
         purchases,
         transports,
       };
+      console.log('🕵️ AGENT filtered results:', agentResult);
+      return agentResult;
 
     default:
+      console.log('❌ Unknown user type, returning empty results');
       return { offers: [], purchases: [], transports: [] };
   }
 }

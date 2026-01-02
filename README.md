@@ -76,10 +76,27 @@ curl http://localhost:3003/health  # Transport Service
 ### 3. Generate Test Data
 
 ```bash
-cd scripts/data-generator
+cd scripts
 npm install
-npm run seed-all    # Creates 1000 offers, 200 purchases, 100 transports
-npm run seed-large  # Creates 10000 records for performance testing
+
+# Quick start - generate default dataset
+npm run generate                    # 50 users, 100 offers, 75 purchases, 30 transports
+
+# Pre-configured dataset sizes
+npm run generate:small              # ~100 total records
+npm run generate:medium             # ~1,000 total records  
+npm run generate:large              # ~5,000 total records
+npm run generate:massive            # ~10,000 total records
+
+# Custom amounts
+node master-data-generator.js --users 200 --offers 500 --purchases 300
+
+# Proportional scaling
+node master-data-generator.js --all 50000     # 25K users, 50K offers, etc.
+node master-data-generator.js --scale 10      # 10x default amounts
+
+# Help and options
+node master-data-generator.js --help
 ```
 
 ### 4. Run Performance Tests
@@ -235,6 +252,23 @@ cd services/transport-service && npm run start:dev
 # Start React UIs
 cd ui && npm run dev          # Original UI (port 3100)
 cd ui-new && npm run dev      # New UI (port 8080)
+
+#to see elastic search
+http://localhost:1358/?appname=*&url=http%3A%2F%2Flocalhost%3A9200&mode=edit&results=1
+
+
+**pgAdmin Database Connections:**
+
+| Table      | Host         | Port | Database      | Username | Password  |
+|------------|--------------|------|--------------|----------|-----------|
+| PURCHASES  | purchase-db  | 5432 | purchase_db  | postgres | password  |
+| OFFERS     | offer-db     | 5432 | offer_db     | postgres | password  |
+| TRANSPORTS | transport-db | 5432 | transport_db | postgres | password  |
+| USERS      | user-db      | 5432 | user_db      | postgres | password  |
+
+> **Tip:** In pgAdmin, create a new connection for each database using the details above to access the respective tables.
+
+
 ```
 
 ### Environment Variables

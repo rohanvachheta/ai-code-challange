@@ -10,8 +10,9 @@ export function APITest() {
   const [status, setStatus] = useState<string>('Ready to test');
 
   const testUserContext: UserContext = {
-    userType: "AGENT",
-    accountId: "00000000-0000-0000-0000-000000000000",
+    userType: "BUYER",
+    accountId: "69cf85c8-95b3-4c1e-83f4-dd2a0f3a14ae",
+    userId: "69cf85c8-95b3-4c1e-83f4-dd2a0f3a14ae",
   };
 
   const testFilters: SearchFilters = {

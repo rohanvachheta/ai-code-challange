@@ -40,9 +40,28 @@ export class PurchasesService {
 
     const savedPurchase = await this.purchaseRepository.save(purchase);
 
-    // Publish Kafka event for search service to process
+    // Fetch buyer and seller details from user service
+    let buyerDetails = null;
+    let sellerDetails = null;
     try {
-      await this.eventsService.publishPurchaseCreated(savedPurchase);
+      const [buyerResponse, sellerResponse] = await Promise.allSettled([
+        fetch(`http://user-service:3005/users/${savedPurchase.buyerId}`),
+        fetch(`http://user-service:3005/users/${savedPurchase.sellerId}`)
+      ]);
+
+      if (buyerResponse.status === 'fulfilled' && buyerResponse.value.ok) {
+        buyerDetails = await buyerResponse.value.json();
+      }
+      if (sellerResponse.status === 'fulfilled' && sellerResponse.value.ok) {
+        sellerDetails = await sellerResponse.value.json();
+      }
+    } catch (error) {
+      console.log('Could not fetch user details:', error.message);
+    }
+
+    // Publish Kafka event with enriched data for search service to process
+    try {
+      await this.eventsService.publishPurchaseCreated(savedPurchase, buyerDetails, sellerDetails, offer);
       console.log('✅ Purchase event published to Kafka:', savedPurchase.purchaseId);
     } catch (error) {
       console.error('❌ Failed to publish purchase event to Kafka:', error);
@@ -110,8 +129,33 @@ export class PurchasesService {
       ...updatePurchaseDto,
     });
 
-    // Emit event after successful update
-    await this.eventsService.publishPurchaseUpdated(updatedPurchase);
+    // Fetch user details and offer details for enriched event
+    let buyerDetails = null;
+    let sellerDetails = null;
+    let offerDetails = null;
+    
+    try {
+      const [buyerResponse, sellerResponse, offerResponse] = await Promise.allSettled([
+        fetch(`http://user-service:3005/users/${updatedPurchase.buyerId}`),
+        fetch(`http://user-service:3005/users/${updatedPurchase.sellerId}`),
+        this.offerService.getOffer(updatedPurchase.offerId)
+      ]);
+
+      if (buyerResponse.status === 'fulfilled' && buyerResponse.value.ok) {
+        buyerDetails = await buyerResponse.value.json();
+      }
+      if (sellerResponse.status === 'fulfilled' && sellerResponse.value.ok) {
+        sellerDetails = await sellerResponse.value.json();
+      }
+      if (offerResponse.status === 'fulfilled') {
+        offerDetails = offerResponse.value;
+      }
+    } catch (error) {
+      console.log('Could not fetch enrichment details:', error.message);
+    }
+
+    // Emit event after successful update with enriched data
+    await this.eventsService.publishPurchaseUpdated(updatedPurchase, buyerDetails, sellerDetails, offerDetails);
 
     return updatedPurchase;
   }

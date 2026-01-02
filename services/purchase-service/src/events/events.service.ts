@@ -8,7 +8,35 @@ export interface PurchaseEvent {
   entityType: 'purchase';
   entityId: string;
   timestamp: string;
-  payload: Purchase;
+  payload: Purchase & {
+    buyerDetails?: {
+      userId: string;
+      firstName: string;
+      lastName: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      userType: string;
+    };
+    sellerDetails?: {
+      userId: string;
+      firstName: string;
+      lastName: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      userType: string;
+    };
+    offerDetails?: {
+      vin: string;
+      make: string;
+      model: string;
+      year: number;
+      price: number;
+      condition: string;
+      location: string;
+    };
+  };
 }
 
 @Injectable()
@@ -19,7 +47,7 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly configService: ConfigService) {
     this.kafka = new Kafka({
       clientId: 'purchase-service',
-      brokers: [this.configService.get('KAFKA_BROKER', 'kafka:9092')],
+      brokers: [this.configService.get('KAFKA_BROKER', 'kafka:19092')],
     });
     this.producer = this.kafka.producer();
   }
@@ -41,25 +69,83 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publishPurchaseCreated(purchase: Purchase): Promise<void> {
+  async publishPurchaseCreated(purchase: Purchase, buyerDetails?: any, sellerDetails?: any, offerDetails?: any): Promise<void> {
     const event: PurchaseEvent = {
       eventType: 'PurchaseCreated',
       entityType: 'purchase',
       entityId: purchase.purchaseId,
       timestamp: new Date().toISOString(),
-      payload: purchase,
+      payload: {
+        ...purchase,
+        buyerDetails: buyerDetails ? {
+          userId: buyerDetails.userId,
+          firstName: buyerDetails.firstName,
+          lastName: buyerDetails.lastName,
+          fullName: `${buyerDetails.firstName} ${buyerDetails.lastName}`,
+          email: buyerDetails.email,
+          phone: buyerDetails.phone,
+          userType: buyerDetails.userType
+        } : null,
+        sellerDetails: sellerDetails ? {
+          userId: sellerDetails.userId,
+          firstName: sellerDetails.firstName,
+          lastName: sellerDetails.lastName,
+          fullName: `${sellerDetails.firstName} ${sellerDetails.lastName}`,
+          email: sellerDetails.email,
+          phone: sellerDetails.phone,
+          userType: sellerDetails.userType
+        } : null,
+        offerDetails: offerDetails ? {
+          vin: offerDetails.vin,
+          make: offerDetails.make,
+          model: offerDetails.model,
+          year: offerDetails.year,
+          price: offerDetails.price,
+          condition: offerDetails.condition,
+          location: offerDetails.location
+        } : null
+      },
     };
 
     await this.publishEvent('purchase-events', event);
   }
 
-  async publishPurchaseUpdated(purchase: Purchase): Promise<void> {
+  async publishPurchaseUpdated(purchase: Purchase, buyerDetails?: any, sellerDetails?: any, offerDetails?: any): Promise<void> {
     const event: PurchaseEvent = {
       eventType: 'PurchaseUpdated',
       entityType: 'purchase',
       entityId: purchase.purchaseId,
       timestamp: new Date().toISOString(),
-      payload: purchase,
+      payload: {
+        ...purchase,
+        buyerDetails: buyerDetails ? {
+          userId: buyerDetails.userId,
+          firstName: buyerDetails.firstName,
+          lastName: buyerDetails.lastName,
+          fullName: `${buyerDetails.firstName} ${buyerDetails.lastName}`,
+          email: buyerDetails.email,
+          phone: buyerDetails.phone,
+          userType: buyerDetails.userType
+        } : null,
+        sellerDetails: sellerDetails ? {
+          userId: sellerDetails.userId,
+          firstName: sellerDetails.firstName,
+          lastName: sellerDetails.lastName,
+          fullName: `${sellerDetails.firstName} ${sellerDetails.lastName}`,
+          email: sellerDetails.email,
+          phone: sellerDetails.phone,
+          userType: sellerDetails.userType
+        } : null,
+        offerDetails: offerDetails ? {
+          vin: offerDetails.vin,
+          make: offerDetails.make,
+          model: offerDetails.model,
+          year: offerDetails.year,
+          price: offerDetails.price,
+          condition: offerDetails.condition,
+          location: offerDetails.location
+        } : null
+      },
     };
 
     await this.publishEvent('purchase-events', event);
