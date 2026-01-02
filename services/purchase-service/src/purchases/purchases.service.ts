@@ -40,8 +40,14 @@ export class PurchasesService {
 
     const savedPurchase = await this.purchaseRepository.save(purchase);
 
-    // Emit event after successful save
-    await this.eventsService.publishPurchaseCreated(savedPurchase);
+    // Publish Kafka event for search service to process
+    try {
+      await this.eventsService.publishPurchaseCreated(savedPurchase);
+      console.log('✅ Purchase event published to Kafka:', savedPurchase.purchaseId);
+    } catch (error) {
+      console.error('❌ Failed to publish purchase event to Kafka:', error);
+      throw error;
+    }
 
     return savedPurchase;
   }

@@ -19,7 +19,7 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly configService: ConfigService) {
     this.kafka = new Kafka({
       clientId: 'transport-service',
-      brokers: [this.configService.get('KAFKA_BROKER', 'localhost:9092')],
+      brokers: [this.configService.get('KAFKA_BROKER', 'kafka:9092')],
     });
     this.producer = this.kafka.producer();
   }

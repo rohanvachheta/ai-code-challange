@@ -36,8 +36,14 @@ export class TransportsService {
 
     const savedTransport = await this.transportRepository.save(transport);
 
-    // Emit event after successful save
-    await this.eventsService.publishTransportCreated(savedTransport);
+    // Publish Kafka event for search service to process
+    try {
+      await this.eventsService.publishTransportCreated(savedTransport);
+      console.log('✅ Transport event published to Kafka:', savedTransport.transportId);
+    } catch (error) {
+      console.error('❌ Failed to publish transport event to Kafka:', error);
+      throw error;
+    }
 
     return savedTransport;
   }

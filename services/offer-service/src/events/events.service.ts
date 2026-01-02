@@ -17,9 +17,17 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
   private producer: Producer;
 
   constructor(private readonly configService: ConfigService) {
+    const kafkaBroker = process.env.KAFKA_BROKER || 'kafka:9092';
+    console.log('🔗 Connecting to Kafka broker:', kafkaBroker);
     this.kafka = new Kafka({
       clientId: 'offer-service',
-      brokers: [this.configService.get('KAFKA_BROKER', 'localhost:9092')],
+      brokers: [kafkaBroker],
+      retry: {
+        initialRetryTime: 100,
+        retries: 8
+      },
+      connectionTimeout: 10000,
+      requestTimeout: 30000,
     });
     this.producer = this.kafka.producer();
   }

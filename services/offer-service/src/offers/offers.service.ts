@@ -18,8 +18,14 @@ export class OffersService {
     const offer = this.offerRepository.create(createOfferDto);
     const savedOffer = await this.offerRepository.save(offer);
 
-    // Emit event after successful save
-    await this.eventsService.publishOfferCreated(savedOffer);
+    // Publish Kafka event for search service to process
+    try {
+      await this.eventsService.publishOfferCreated(savedOffer);
+      console.log('✅ Offer event published to Kafka:', savedOffer.offerId);
+    } catch (error) {
+      console.error('❌ Failed to publish offer event to Kafka:', error);
+      throw error;
+    }
 
     return savedOffer;
   }

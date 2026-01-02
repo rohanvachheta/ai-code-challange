@@ -21,9 +21,17 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
     private readonly configService: ConfigService,
     private readonly indexService: IndexService,
   ) {
+    const kafkaBroker = process.env.KAFKA_BROKER || 'kafka:9092';
+    console.log('🔗 Search service connecting to Kafka broker:', kafkaBroker);
     this.kafka = new Kafka({
       clientId: 'search-service-consumer',
-      brokers: [this.configService.get('KAFKA_BROKER', 'localhost:9092')],
+      brokers: [kafkaBroker],
+      retry: {
+        initialRetryTime: 100,
+        retries: 8
+      },
+      connectionTimeout: 10000,
+      requestTimeout: 30000,
     });
     this.consumer = this.kafka.consumer({ groupId: 'search-service-group' });
   }
