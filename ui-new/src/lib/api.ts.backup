@@ -1,0 +1,549 @@
+// // /**
+// //  * API Client for Centralized Search Platform
+// //  *
+// //  * TODO: Replace BASE_URL with your actual Search API endpoint
+// //  * Example: const BASE_URL = 'https://api.yourplatform.com/v1/search';
+// //  */
+
+// // import type {
+// //   UserContext,
+// //   AutocompleteSuggestion,
+// //   SearchResponse,
+// //   OfferResult,
+// //   PurchaseResult,
+// //   TransportResult,
+// // } from '@/types/search';
+
+// // // TODO: Update this URL to point to your actual Search API
+// // const BASE_URL = '/api/search';
+
+// // /**
+// //  * Fetch autocomplete suggestions
+// //  *
+// //  * @param query - The search query string
+// //  * @param userContext - User context for role-based filtering
+// //  * @returns Promise<AutocompleteSuggestion[]>
+// //  *
+// //  * TODO: Adapt the response mapping when backend response shape changes
+// //  */
+// // export async function fetchAutocomplete(
+// //   query: string,
+// //   userContext: UserContext
+// // ): Promise<AutocompleteSuggestion[]> {
+// //   // For demo purposes, return mock data
+// //   // TODO: Replace with actual API call:
+// //   // const response = await fetch(`${BASE_URL}/autocomplete`, {
+// //   //   method: 'POST',
+// //   //   headers: { 'Content-Type': 'application/json' },
+// //   //   body: JSON.stringify({ query, ...userContext }),
+// //   // });
+// //   // const data = await response.json();
+// //   // return mapAutocompleteSuggestions(data);
+
+// //   // Mock implementation for demo
+// //   await new Promise((resolve) => setTimeout(resolve, 200));
+
+// //   if (!query.trim()) return [];
+
+// //   const mockSuggestions: AutocompleteSuggestion[] = [
+// //     {
+// //       id: '1',
+// //       text: `${query} - Toyota Camry 2023`,
+// //       entityType: 'offer',
+// //       highlightedText: `<mark>${query}</mark> - Toyota Camry 2023`,
+// //     },
+// //     {
+// //       id: '2',
+// //       text: `${query} - Honda Accord Purchase`,
+// //       entityType: 'purchase',
+// //       highlightedText: `<mark>${query}</mark> - Honda Accord Purchase`,
+// //     },
+// //     {
+// //       id: '3',
+// //       text: `${query} - Transport to Los Angeles`,
+// //       entityType: 'transport',
+// //       highlightedText: `<mark>${query}</mark> - Transport to Los Angeles`,
+// //     },
+// //   ];
+
+// //   return mockSuggestions;
+// // }
+
+// // /**
+// //  * Fetch search results
+// //  *
+// //  * @param query - The search query string
+// //  * @param userContext - User context for role-based filtering
+// //  * @param pagination - Pagination parameters
+// //  * @returns Promise<SearchResponse>
+// //  *
+// //  * TODO: Adapt the response mapping when backend response shape changes
+// //  */
+// // export async function fetchSearchResults(
+// //   query: string,
+// //   userContext: UserContext,
+// //   pagination: { page: number; pageSize: number } = { page: 1, pageSize: 20 }
+// // ): Promise<SearchResponse> {
+// //   // TODO: Replace with actual API call:
+// //   // const response = await fetch(`${BASE_URL}/search`, {
+// //   //   method: 'POST',
+// //   //   headers: { 'Content-Type': 'application/json' },
+// //   //   body: JSON.stringify({ query, ...userContext, ...pagination }),
+// //   // });
+// //   // const data = await response.json();
+// //   // return mapSearchResponse(data);
+
+// //   // Mock implementation for demo
+// //   await new Promise((resolve) => setTimeout(resolve, 500));
+
+// //   if (!query.trim()) {
+// //     return {
+// //       query,
+// //       totalResults: 0,
+// //       results: { offers: [], purchases: [], transports: [] },
+// //       pagination: { page: 1, pageSize: 20, totalPages: 0 },
+// //     };
+// //   }
+
+// //   const mockOffers: OfferResult[] = [
+// //     {
+// //       id: 'o1',
+// //       entityType: 'offer',
+// //       vin: '1HGBH41JXMN109186',
+// //       make: 'Toyota',
+// //       model: 'Camry',
+// //       year: 2023,
+// //       price: 28500,
+// //       location: 'Los Angeles, CA',
+// //       condition: 'new',
+// //       status: 'available',
+// //     },
+// //     {
+// //       id: 'o2',
+// //       entityType: 'offer',
+// //       vin: '2HGBH41JXMN109187',
+// //       make: 'Honda',
+// //       model: 'Accord',
+// //       year: 2022,
+// //       price: 24900,
+// //       location: 'San Francisco, CA',
+// //       condition: 'certified',
+// //       status: 'available',
+// //     },
+// //     {
+// //       id: 'o3',
+// //       entityType: 'offer',
+// //       vin: '3HGBH41JXMN109188',
+// //       make: 'Ford',
+// //       model: 'Mustang',
+// //       year: 2023,
+// //       price: 42000,
+// //       location: 'Phoenix, AZ',
+// //       condition: 'new',
+// //       status: 'pending',
+// //     },
+// //   ];
+
+// //   const mockPurchases: PurchaseResult[] = [
+// //     {
+// //       id: 'p1',
+// //       entityType: 'purchase',
+// //       purchaseId: 'PUR-2024-001',
+// //       offerVin: '1HGBH41JXMN109186',
+// //       offerMake: 'Toyota',
+// //       offerModel: 'Camry',
+// //       buyerName: 'John Smith',
+// //       buyerEmail: 'john@example.com',
+// //       purchaseDate: '2024-01-15',
+// //       status: 'completed',
+// //     },
+// //     {
+// //       id: 'p2',
+// //       entityType: 'purchase',
+// //       purchaseId: 'PUR-2024-002',
+// //       offerVin: '2HGBH41JXMN109187',
+// //       offerMake: 'Honda',
+// //       offerModel: 'Accord',
+// //       buyerName: 'Jane Doe',
+// //       buyerEmail: 'jane@example.com',
+// //       purchaseDate: '2024-01-18',
+// //       status: 'pending',
+// //     },
+// //   ];
+
+// //   const mockTransports: TransportResult[] = [
+// //     {
+// //       id: 't1',
+// //       entityType: 'transport',
+// //       transportId: 'TRN-2024-001',
+// //       carrierName: 'FastShip Logistics',
+// //       carrierPhone: '+1 555-0123',
+// //       pickupLocation: 'Los Angeles, CA',
+// //       deliveryLocation: 'Phoenix, AZ',
+// //       scheduleDate: '2024-01-20',
+// //       status: 'scheduled',
+// //       relatedOfferVin: '1HGBH41JXMN109186',
+// //       relatedOfferModel: 'Toyota Camry',
+// //     },
+// //     {
+// //       id: 't2',
+// //       entityType: 'transport',
+// //       transportId: 'TRN-2024-002',
+// //       carrierName: 'AutoMove Express',
+// //       carrierPhone: '+1 555-0456',
+// //       pickupLocation: 'San Francisco, CA',
+// //       deliveryLocation: 'Seattle, WA',
+// //       scheduleDate: '2024-01-22',
+// //       status: 'in_transit',
+// //       relatedOfferVin: '2HGBH41JXMN109187',
+// //       relatedOfferModel: 'Honda Accord',
+// //     },
+// //     {
+// //       id: 't3',
+// //       entityType: 'transport',
+// //       transportId: 'TRN-2024-003',
+// //       carrierName: 'QuickHaul Inc',
+// //       carrierPhone: '+1 555-0789',
+// //       pickupLocation: 'Denver, CO',
+// //       deliveryLocation: 'Dallas, TX',
+// //       scheduleDate: '2024-01-25',
+// //       status: 'delivered',
+// //     },
+// //   ];
+
+// //   // Filter results based on user type (mock implementation)
+// //   // Real filtering happens on the backend
+// //   let offers = mockOffers;
+// //   let purchases = mockPurchases;
+// //   let transports = mockTransports;
+
+// //   if (userContext.userType === 'seller') {
+// //     purchases = [];
+// //     transports = [];
+// //   } else if (userContext.userType === 'buyer') {
+// //     transports = [];
+// //   } else if (userContext.userType === 'carrier') {
+// //     offers = [];
+// //     purchases = [];
+// //   }
+
+// //   return {
+// //     query,
+// //     totalResults: offers.length + purchases.length + transports.length,
+// //     results: { offers, purchases, transports },
+// //     pagination: { page: 1, pageSize: 20, totalPages: 1 },
+// //   };
+// // }
+
+// /**
+//  * API Client for Centralized Search Platform
+//  *
+//  * This client now makes actual HTTP requests to a mock API server.
+//  * In production, replace the BASE_URL with your actual Search API endpoint.
+//  * Example: const BASE_URL = 'https://api.yourplatform.com/v1/search';
+//  */
+// import axios from "axios";
+// import type {
+//   UserContext,
+//   AutocompleteSuggestion,
+//   SearchResponse,
+// } from "@/types/search";
+
+// // TODO: Update this URL to point to your actual Search API
+// // For development, it points to the mock API server
+// const BASE_URL = "http://localhost:3001/api/search";
+
+// // Create axios instance with default configuration
+// const apiClient = axios.create({
+//   baseURL: BASE_URL,
+//   timeout: 10000, // 10 seconds timeout
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// });
+
+// /**
+//  * Fetch autocomplete suggestions
+//  *
+//  * @param query - The search query string
+//  * @param userContext - User context for role-based filtering
+//  * @returns Promise<AutocompleteSuggestion[]>
+//  */
+// export async function fetchAutocomplete(
+//   query: string,
+//   userContext: UserContext
+// ): Promise<AutocompleteSuggestion[]> {
+//   try {
+//     const response = await apiClient.post("/autocomplete", {
+//       query,
+//       userType: userContext.userType,
+//       accountId: userContext.accountId,
+//       userId: userContext.userId,
+//     });
+
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error fetching autocomplete suggestions:", error);
+
+//     // Return empty array on error instead of throwing
+//     // In production, you might want to show a user-friendly error message
+//     return [];
+//   }
+// }
+
+// /**
+//  * Fetch search results
+//  *
+//  * @param query - The search query string
+//  * @param userContext - User context for role-based filtering
+//  * @param pagination - Pagination parameters
+//  * @returns Promise<SearchResponse>
+//  */
+// export async function fetchSearchResults(
+//   query: string,
+//   userContext: UserContext,
+//   pagination: { page: number; pageSize: number } = { page: 1, pageSize: 20 }
+// ): Promise<SearchResponse> {
+//   try {
+//     const response = await apiClient.post("/", {
+//       query,
+//       userType: userContext.userType,
+//       accountId: userContext.accountId,
+//       userId: userContext.userId,
+//       page: pagination.page,
+//       pageSize: pagination.pageSize,
+//     });
+
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error fetching search results:", error);
+
+//     // Return empty results on error instead of throwing
+//     // In production, you might want to show a user-friendly error message
+//     return {
+//       query,
+//       totalResults: 0,
+//       results: { offers: [], purchases: [], transports: [] },
+//       pagination: {
+//         page: pagination.page,
+//         pageSize: pagination.pageSize,
+//         totalPages: 0,
+//       },
+//     };
+//   }
+// }
+
+/**
+ * API Client for Centralized Search Platform
+ *
+ * TODO: Replace BASE_URL with your actual Search API endpoint
+ * Example: const BASE_URL = 'https://api.yourplatform.com/v1/search';
+ *
+ * Currently using dummy data from src/lib/dummyData.ts
+ * Replace the dummy data implementation with actual API calls when ready.
+ */
+import type {
+  UserContext,
+  AutocompleteSuggestion,
+  SearchResponse,
+  StatusFilter,
+  SearchFilters,
+} from "@/types/search";
+import {
+  DUMMY_OFFERS,
+  DUMMY_PURCHASES,
+  DUMMY_TRANSPORTS,
+  filterOffersByQuery,
+  filterPurchasesByQuery,
+  filterTransportsByQuery,
+  filterOffersByStatus,
+  filterPurchasesByStatus,
+  filterTransportsByStatus,
+  filterByUserContext,
+  generateAutocompleteSuggestions,
+  filterOffersAdvanced,
+  filterPurchasesAdvanced,
+  filterTransportsAdvanced,
+} from "./dummyData";
+// TODO: Update this URL to point to your actual Search API
+const BASE_URL = "/api/search";
+/**
+ * Fetch autocomplete suggestions
+ *
+ * @param query - The search query string
+ * @param userContext - User context for role-based filtering
+ * @returns Promise<AutocompleteSuggestion[]>
+ *
+ * TODO: Replace with actual API call:
+ * const response = await fetch(`${BASE_URL}/autocomplete`, {
+ *   method: 'POST',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify({ query, ...userContext }),
+ * });
+ * const data = await response.json();
+ * return mapAutocompleteSuggestions(data);
+ */
+export async function fetchAutocomplete(
+  query: string,
+  userContext: UserContext
+): Promise<AutocompleteSuggestion[]> {
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
+  if (!query.trim()) return [];
+  // Generate suggestions from dummy data based on query and user context
+  return generateAutocompleteSuggestions(query, userContext);
+}
+/**
+ * Fetch search results
+ *
+ * @param query - The search query string
+ * @param userContext - User context for role-based filtering
+ * @param pagination - Pagination parameters
+ * @param statusFilter - Status filter (legacy, use searchWithFilters for advanced filtering)
+ * @returns Promise<SearchResponse>
+ *
+ * TODO: Replace with actual API call:
+ * const response = await fetch(`${BASE_URL}/search`, {
+ *   method: 'POST',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify({ query, ...userContext, ...pagination }),
+ * });
+ * const data = await response.json();
+ * return mapSearchResponse(data);
+ */
+export async function fetchSearchResults(
+  query: string,
+  userContext: UserContext,
+  pagination: { page: number; pageSize: number } = { page: 1, pageSize: 20 },
+  statusFilter: StatusFilter = "all"
+): Promise<SearchResponse> {
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  // If no query, return empty results (unless using advanced filters)
+  if (!query.trim()) {
+    return {
+      query,
+      totalResults: 0,
+      results: { offers: [], purchases: [], transports: [] },
+      pagination: {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        totalPages: 0,
+      },
+    };
+  }
+  // Step 1: Filter dummy data by query (query-aware filtering)
+  let filteredOffers = filterOffersByQuery(DUMMY_OFFERS, query);
+  let filteredPurchases = filterPurchasesByQuery(DUMMY_PURCHASES, query);
+  let filteredTransports = filterTransportsByQuery(DUMMY_TRANSPORTS, query);
+  // Step 2: Apply status filtering
+  filteredOffers = filterOffersByStatus(filteredOffers, statusFilter);
+  filteredPurchases = filterPurchasesByStatus(filteredPurchases, statusFilter);
+  filteredTransports = filterTransportsByStatus(
+    filteredTransports,
+    statusFilter
+  );
+  // Step 3: Apply user context filtering (role-based filtering)
+  // In production, this filtering happens on the backend based on accountId/userId
+  const { offers, purchases, transports } = filterByUserContext(
+    filteredOffers,
+    filteredPurchases,
+    filteredTransports,
+    userContext
+  );
+  // Step 4: Apply pagination
+  const startIndex = (pagination.page - 1) * pagination.pageSize;
+  const endIndex = startIndex + pagination.pageSize;
+
+  const paginatedOffers = offers.slice(startIndex, endIndex);
+  const paginatedPurchases = purchases.slice(startIndex, endIndex);
+  const paginatedTransports = transports.slice(startIndex, endIndex);
+  const totalResults = offers.length + purchases.length + transports.length;
+  const totalPages = Math.ceil(totalResults / pagination.pageSize);
+  return {
+    query,
+    totalResults,
+    results: {
+      offers: paginatedOffers,
+      purchases: paginatedPurchases,
+      transports: paginatedTransports,
+    },
+    pagination: {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      totalPages,
+    },
+  };
+}
+/**
+ * Fetch search results with advanced filters
+ *
+ * @param query - The search query string (can be empty)
+ * @param filters - Advanced search filters
+ * @param userContext - User context for role-based filtering
+ * @param pagination - Pagination parameters
+ * @returns Promise<SearchResponse>
+ *
+ * TODO: Replace with actual API call:
+ * const response = await fetch(`${BASE_URL}/search`, {
+ *   method: 'POST',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify({ query, filters, ...userContext, ...pagination }),
+ * });
+ * const data = await response.json();
+ * return mapSearchResponse(data);
+ */
+export async function fetchSearchResultsWithFilters(
+  query: string,
+  filters: SearchFilters,
+  userContext: UserContext,
+  pagination: { page: number; pageSize: number } = { page: 1, pageSize: 5 }
+): Promise<SearchResponse> {
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  // Step 1: Start with all dummy data
+  let filteredOffers = [...DUMMY_OFFERS];
+  let filteredPurchases = [...DUMMY_PURCHASES];
+  let filteredTransports = [...DUMMY_TRANSPORTS];
+  // Step 2: Apply query filtering if query exists
+  if (query.trim()) {
+    filteredOffers = filterOffersByQuery(filteredOffers, query);
+    filteredPurchases = filterPurchasesByQuery(filteredPurchases, query);
+    filteredTransports = filterTransportsByQuery(filteredTransports, query);
+  }
+  // Step 3: Apply advanced filtering
+  filteredOffers = filterOffersAdvanced(filteredOffers, filters);
+  filteredPurchases = filterPurchasesAdvanced(filteredPurchases, filters);
+  filteredTransports = filterTransportsAdvanced(filteredTransports, filters);
+  // Step 4: Apply user context filtering (role-based filtering)
+  const { offers, purchases, transports } = filterByUserContext(
+    filteredOffers,
+    filteredPurchases,
+    filteredTransports,
+    userContext
+  );
+  // Step 5: Apply pagination (default 5 per page for view more functionality)
+  const startIndex = (pagination.page - 1) * pagination.pageSize;
+  const endIndex = startIndex + pagination.pageSize;
+
+  const paginatedOffers = offers.slice(startIndex, endIndex);
+  const paginatedPurchases = purchases.slice(startIndex, endIndex);
+  const paginatedTransports = transports.slice(startIndex, endIndex);
+  const totalResults = offers.length + purchases.length + transports.length;
+  const totalPages = Math.ceil(totalResults / pagination.pageSize);
+  return {
+    query,
+    totalResults,
+    results: {
+      offers: paginatedOffers,
+      purchases: paginatedPurchases,
+      transports: paginatedTransports,
+    },
+    pagination: {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      totalPages,
+    },
+  };
+}

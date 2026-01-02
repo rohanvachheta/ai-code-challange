@@ -1,0 +1,14 @@
+{
+  "name": "load-testing",
+  "version": "1.0.0",
+  "description": "Load testing scripts for automotive marketplace",
+  "main": "index.js",
+  "scripts": {
+    "test": "k6 run",
+    "test:search": "k6 run search-test.js",
+    "test:api": "k6 run api-test.js",
+    "test:mixed": "k6 run mixed-workload.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
