@@ -1,19 +1,13 @@
-# Use the official Bun image
-FROM oven/bun:latest
-
+# Use the official Node.js image
+FROM node:18-alpine
 WORKDIR /app
-
-# Copy package.json and bun.lockb
-COPY package.json bun.lockb ./
-
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json ./
 # Install dependencies
-RUN bun install
-
+RUN npm install
 # Copy the rest of the application code
 COPY . .
-
 # Expose port for Vite dev server
 EXPOSE 5173
-
 # Start the development server
-CMD ["bun", "run", "dev", "--host", "0.0.0.0"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
