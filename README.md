@@ -24,8 +24,9 @@ A production-grade, scalable search platform built with a monorepo architecture 
                     └─────────────────────────────────────┘
                                  │
                     ┌─────────────────────────────────────┐
-                    │         React Frontend              │
-                    │      (Port 5173 - Vite)            │
+                    │         React Frontends             │
+                    │  UI: Port 3100  │  UI-New: Port 3101│
+                    │    (Docker)     │   (Port 8080 dev) │
                     └─────────────────────────────────────┘
 ```
 
@@ -65,7 +66,8 @@ curl http://localhost:3003/health  # Transport Service
 
 ### 2. Access the Application
 
-- **React UI**: http://localhost:5173
+- **React UI (Original)**: http://localhost:3100
+- **React UI (New)**: http://localhost:3101 (Docker) / http://localhost:8080 (Development)
 - **Search API**: http://localhost:3000
 - **Offer API**: http://localhost:3001 (Swagger: /api)
 - **Purchase API**: http://localhost:3002 (Swagger: /api)
@@ -230,8 +232,9 @@ cd services/offer-service && npm run start:dev
 cd services/purchase-service && npm run start:dev
 cd services/transport-service && npm run start:dev
 
-# Start React UI
-cd ui && npm run dev
+# Start React UIs
+cd ui && npm run dev          # Original UI (port 3100)
+cd ui-new && npm run dev      # New UI (port 8080)
 ```
 
 ### Environment Variables
