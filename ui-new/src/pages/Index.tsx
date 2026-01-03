@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserContextForm } from '@/components/UserContextForm';
-import { SearchBarWithAutocomplete } from '@/components/SearchBarWithAutocomplete';
+import { SmartSearchBar } from '@/components/SmartSearchBar';
 // import { SearchFilter } from '@/components/SearchFilter';
 import { SearchResults } from '@/components/SearchResults';
 import { UserContext, SearchResponse, StatusFilter, SearchFilters } from '@/types/search';
@@ -234,7 +234,7 @@ const Index = () => {
             Search
           </h2>
           <div className="flex gap-2">
-            <SearchBarWithAutocomplete
+            <SmartSearchBar
               userContext={userContext}
               onSearch={handleSearch}
               isSearching={isSearching}

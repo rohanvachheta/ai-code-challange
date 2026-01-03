@@ -3,22 +3,18 @@ import { Search, Loader2, Car, ShoppingCart, Truck, Phone, Calendar, MapPin, Dol
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AutocompleteSuggestion, EntityType, UserContext } from '@/types/search';
+import { AIStatus } from '@/components/AIStatus';
+import { EntityType, UserContext } from '@/types/search';
 import { SmartSuggestion, generateSmartSuggestions, detectInputType } from '@/lib/smartSuggestions';
+import { generateAIEnhancedSuggestions, detectQueryIntent } from '@/lib/aiSearchEngine';
 
-interface SearchBarWithAutocompleteProps {
+interface SmartSearchBarProps {
   userContext: UserContext;
   onSearch: (query: string) => void;
   isSearching: boolean;
 }
 
 const DEBOUNCE_DELAY = 250; // Reduced for faster response
-
-const ENTITY_ICONS: Record<EntityType, React.ReactNode> = {
-  offer: <Car className="w-4 h-4 text-accent" />,
-  purchase: <ShoppingCart className="w-4 h-4 text-success" />,
-  transport: <Truck className="w-4 h-4 text-warning" />,
-};
 
 const SUGGESTION_TYPE_ICONS = {
   vin: <Car className="w-4 h-4" />,
@@ -40,24 +36,18 @@ const SUGGESTION_TYPE_LABELS = {
   year: 'Year'
 };
 
-const ENTITY_LABELS: Record<EntityType, string> = {
-  offer: 'Offer',
-  purchase: 'Purchase',
-  transport: 'Transport',
-};
-
 /**
- * SearchBarWithAutocomplete Component
+ * SmartSearchBar Component
  *
  * Enhanced search input with smart autocomplete functionality.
  * Features intelligent detection of VINs, car makes/models, phone numbers, etc.
  * Supports keyboard navigation and highlights matched query parts.
  */
-export function SearchBarWithAutocomplete({
+export function SmartSearchBar({
   userContext,
   onSearch,
   isSearching,
-}: SearchBarWithAutocompleteProps) {
+}: SmartSearchBarProps) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<SmartSuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
@@ -75,8 +65,10 @@ export function SearchBarWithAutocomplete({
     setDetectedInputType(type);
   }, [query]);
 
-  // Fetch smart suggestions with debounce
+  // Fetch smart suggestions with AI enhancement
   const fetchSuggestions = useCallback(async (searchQuery: string) => {
+    console.log('🔍 SmartSearchBar: fetchSuggestions called with:', searchQuery);
+    
     if (!searchQuery.trim()) {
       setSuggestions([]);
       setShowDropdown(false);
@@ -85,14 +77,39 @@ export function SearchBarWithAutocomplete({
 
     setIsLoadingSuggestions(true);
     try {
-      // Use smart suggestions instead of API call
-      const smartSuggestions = generateSmartSuggestions(searchQuery, userContext);
-      setSuggestions(smartSuggestions);
-      setShowDropdown(smartSuggestions.length > 0);
+      console.log('🤖 Calling AI-enhanced suggestions...');
+      // Get query intent for better UX feedback
+      const queryIntent = detectQueryIntent(searchQuery);
+      console.log('🎯 Query intent detected:', queryIntent);
+      
+      // Use AI-enhanced suggestions for better accuracy
+      const aiSuggestions = generateAIEnhancedSuggestions(searchQuery, userContext);
+      console.log('🤖 AI suggestions received:', aiSuggestions);
+      
+      // Fallback to original smart suggestions if AI returns few results
+      let finalSuggestions = aiSuggestions;
+      if (aiSuggestions.length < 3) {
+        console.log('⚠️ AI returned few results, adding fallback suggestions...');
+        const fallbackSuggestions = generateSmartSuggestions(searchQuery, userContext);
+        console.log('🔄 Fallback suggestions:', fallbackSuggestions);
+        finalSuggestions = [...aiSuggestions, ...fallbackSuggestions]
+          .filter((suggestion, index, self) => 
+            index === self.findIndex(s => s.text === suggestion.text)
+          )
+          .slice(0, 8);
+      }
+      
+      console.log('✅ Final suggestions to display:', finalSuggestions);
+      setSuggestions(finalSuggestions);
+      setShowDropdown(finalSuggestions.length > 0);
       setSelectedIndex(-1);
     } catch (error) {
-      console.error('Smart suggestions error:', error);
-      setSuggestions([]);
+      console.error('❌ AI-enhanced search error:', error);
+      // Fallback to original suggestions on error
+      const fallbackSuggestions = generateSmartSuggestions(searchQuery, userContext);
+      console.log('🔄 Error fallback suggestions:', fallbackSuggestions);
+      setSuggestions(fallbackSuggestions);
+      setShowDropdown(fallbackSuggestions.length > 0);
     } finally {
       setIsLoadingSuggestions(false);
     }
@@ -181,11 +198,19 @@ export function SearchBarWithAutocomplete({
   };
 
   const getSmartPlaceholder = () => {
+    if (!query) {
+      return 'AI Search: VIN, make/model, phone, location, "BMW near me"...';
+    }
+    
     switch (detectedInputType) {
       case 'vin':
         return 'Continue typing VIN...';
       case 'phone':
-        return 'Continue typing phone number...';
+        return 'Phone number detected - searching dealers...';
+      case 'location_query':
+        return 'Location search active - finding nearby dealers...';
+      case 'proximity_search':
+        return 'Proximity search - finding cars near you...';
       case 'year':
         return 'Year detected - try adding make/model';
       case 'price':
@@ -194,8 +219,12 @@ export function SearchBarWithAutocomplete({
         return 'Continue typing car make...';
       case 'alias':
         return 'Car brand detected - continue typing...';
+      case 'typo_correction':
+        return 'AI typo correction active...';
+      case 'fuzzy_match':
+        return 'AI finding similar matches...';
       default:
-        return 'Search by VIN, make, model, phone, or any detail...';
+        return '🤖 AI-powered: VIN, make, model, phone, location, natural language...';
     }
   };
 
@@ -229,6 +258,7 @@ export function SearchBarWithAutocomplete({
             <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground animate-spin" />
           )}
         </div>
+        
         <Button
           onClick={handleSearch}
           disabled={isSearching || !query.trim()}
@@ -255,6 +285,8 @@ export function SearchBarWithAutocomplete({
           className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg z-50 overflow-hidden max-h-96 overflow-y-auto"
         >
           <div className="p-2">
+            <AIStatus query={query} suggestionsCount={suggestions.length} />
+            
             <div className="text-xs text-muted-foreground mb-2 px-2">
               Smart suggestions ({suggestions.length})
             </div>

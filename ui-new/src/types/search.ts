@@ -62,12 +62,19 @@
 // export type SearchResult = OfferResult | PurchaseResult | TransportResult;
 
 // // Autocomplete suggestion
-// export interface AutocompleteSuggestion {
-//   id: string;
-//   text: string;
-//   entityType: EntityType;
-//   highlightedText: string;
-// }
+export interface AutocompleteSuggestion {
+  id: string;
+  text: string;
+  entityType: EntityType;
+  highlightedText: string;
+}
+
+// Enhanced smart suggestion with confidence and context
+export interface SmartSuggestion extends AutocompleteSuggestion {
+  suggestionType: 'vin' | 'make_model' | 'phone' | 'name' | 'location' | 'price' | 'year';
+  confidence: number;
+  context?: string;
+}
 
 // // Grouped search response
 // export interface SearchResponse {

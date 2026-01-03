@@ -4,11 +4,33 @@
   "description": "Load testing scripts for automotive marketplace",
   "main": "index.js",
   "scripts": {
+    "demo": "./demo.sh",
     "test": "k6 run",
     "test:search": "k6 run search-test.js",
     "test:api": "k6 run api-test.js",
-    "test:mixed": "k6 run mixed-workload.js"
+    "test:mixed": "k6 run mixed-workload.js",
+    "generate-massive": "node massive-data-generator.js",
+    "generate-10m": "node massive-data-generator.js --records 10000000 --workers 8",
+    "generate-1m": "node massive-data-generator.js --records 1000000 --workers 4",
+    "concurrent-test": "k6 run --out json=results.json concurrent-search-test.js",
+    "stress-test": "k6 run stress-test.js",
+    "stress-heavy": "k6 run --vus 1000 --duration 30m stress-test.js",
+    "performance-monitor": "./monitor-performance.sh",
+    "full-load-test": "./run-full-load-test.sh",
+    "full-load-10m": "./run-full-load-test.sh --records 10000000 --workers 8",
+    "cleanup": "node cleanup-test-data.js",
+    "cleanup-dry-run": "node cleanup-test-data.js --dry-run",
+    "install-k6-mac": "brew install k6",
+    "install-k6-manual": "curl https://github.com/grafana/k6/releases/download/v0.47.0/k6-v0.47.0-macos-amd64.tar.gz -L | tar xvz --strip-components 1"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@faker-js/faker": "^8.4.0",
+    "axios": "^1.6.0",
+    "performance-now": "^2.1.0",
+    "progress": "^2.0.3",
+    "colors": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
 }
