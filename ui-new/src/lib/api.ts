@@ -68,6 +68,7 @@ function transformApiResult(apiResult: ApiSearchResult): any {
         location: apiResult.location || '',
         condition: apiResult.condition?.toLowerCase() as "new" | "used" | "certified" || "new",
         status: mapStatus(apiResult.status),
+        sellerDetails: apiResult.sellerDetails,
       };
     case "purchase":
       return {
@@ -76,21 +77,24 @@ function transformApiResult(apiResult: ApiSearchResult): any {
         offerVin: apiResult.vin || '',
         offerMake: apiResult.make || '',
         offerModel: apiResult.model || '',
-        buyerName: 'Buyer',
-        buyerEmail: 'buyer@example.com',
+        buyerName: apiResult.buyerDetails?.fullName || 'Buyer',
+        buyerEmail: apiResult.buyerDetails?.email || 'buyer@example.com',
         purchaseDate: apiResult.createdAt,
         status: mapPurchaseStatus(apiResult.status),
+        buyerDetails: apiResult.buyerDetails,
+        sellerDetails: apiResult.sellerDetails,
       };
     case "transport":
       return {
         ...base,
         transportId: apiResult.entityId,
-        carrierName: 'Carrier',
-        carrierPhone: '555-0123',
+        carrierName: apiResult.carrierDetails?.fullName || 'Carrier',
+        carrierPhone: apiResult.carrierDetails?.phone || '555-0123',
         pickupLocation: apiResult.pickupLocation || '',
         deliveryLocation: apiResult.deliveryLocation || '',
         scheduleDate: apiResult.scheduledPickupDate || apiResult.createdAt,
         status: mapTransportStatus(apiResult.status),
+        carrierDetails: apiResult.carrierDetails,
       };
     default:
       return base;
@@ -165,7 +169,7 @@ export async function fetchSearchResultsFromAPIWithFilters(
 
   const requestPayload: SearchRequest = {
     userType: userContext.userType,
-    accountId: userContext.accountId,
+    userId: userContext.userId || userContext.accountId,
     searchText: query,
     page: pagination.page,
     limit: pagination.pageSize,

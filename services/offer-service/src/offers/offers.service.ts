@@ -18,9 +18,20 @@ export class OffersService {
     const offer = this.offerRepository.create(createOfferDto);
     const savedOffer = await this.offerRepository.save(offer);
 
-    // Publish Kafka event for search service to process
+    // Fetch seller details from user service
+    let sellerDetails = null;
     try {
-      await this.eventsService.publishOfferCreated(savedOffer);
+      const userServiceResponse = await fetch(`http://user-service:3005/users/${savedOffer.sellerId}`);
+      if (userServiceResponse.ok) {
+        sellerDetails = await userServiceResponse.json();
+      }
+    } catch (error) {
+      console.log('Could not fetch seller details:', error.message);
+    }
+
+    // Publish Kafka event with enriched data for search service to process
+    try {
+      await this.eventsService.publishOfferCreated(savedOffer, sellerDetails);
       console.log('✅ Offer event published to Kafka:', savedOffer.offerId);
     } catch (error) {
       console.error('❌ Failed to publish offer event to Kafka:', error);

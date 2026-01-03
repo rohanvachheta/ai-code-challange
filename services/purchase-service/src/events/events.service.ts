@@ -8,7 +8,26 @@ export interface PurchaseEvent {
   entityType: 'purchase';
   entityId: string;
   timestamp: string;
-  payload: Purchase;
+  payload: Purchase & {
+    buyerDetails?: {
+      userId: string;
+      firstName: string;
+      lastName: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      userType: string;
+    };
+    sellerDetails?: {
+      userId: string;
+      firstName: string;
+      lastName: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      userType: string;
+    };
+  };
 }
 
 @Injectable()
@@ -41,13 +60,33 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publishPurchaseCreated(purchase: Purchase): Promise<void> {
+  async publishPurchaseCreated(purchase: Purchase, buyerDetails?: any, sellerDetails?: any): Promise<void> {
     const event: PurchaseEvent = {
       eventType: 'PurchaseCreated',
       entityType: 'purchase',
       entityId: purchase.purchaseId,
       timestamp: new Date().toISOString(),
-      payload: purchase,
+      payload: {
+        ...purchase,
+        buyerDetails: buyerDetails ? {
+          userId: buyerDetails.userId,
+          firstName: buyerDetails.firstName,
+          lastName: buyerDetails.lastName,
+          fullName: `${buyerDetails.firstName} ${buyerDetails.lastName}`,
+          email: buyerDetails.email,
+          phone: buyerDetails.phone,
+          userType: buyerDetails.userType
+        } : null,
+        sellerDetails: sellerDetails ? {
+          userId: sellerDetails.userId,
+          firstName: sellerDetails.firstName,
+          lastName: sellerDetails.lastName,
+          fullName: `${sellerDetails.firstName} ${sellerDetails.lastName}`,
+          email: sellerDetails.email,
+          phone: sellerDetails.phone,
+          userType: sellerDetails.userType
+        } : null
+      },
     };
 
     await this.publishEvent('purchase-events', event);

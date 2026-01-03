@@ -34,6 +34,19 @@ export interface GlobalSearchDocument {
   deliveryLocation?: string;
   scheduledPickupDate?: string;
   scheduledDeliveryDate?: string;
+  // User details
+  sellerDetails?: {
+    fullName: string;
+    email: string;
+    phone: string;
+    userType: string;
+  };
+  buyerDetails?: {
+    fullName: string;
+    email: string;
+    phone: string;
+    userType: string;
+  };
 }
 
 @Injectable()

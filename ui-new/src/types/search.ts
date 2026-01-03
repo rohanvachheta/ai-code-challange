@@ -108,10 +108,18 @@ export interface UserContext {
   userId?: string;
 }
 
+// User details interface
+export interface UserDetails {
+  fullName: string;
+  email: string;
+  phone: string;
+  userType: string;
+}
+
 // API Request/Response types for the actual search endpoint
 export interface SearchRequest {
   userType: UserType;
-  accountId: string;
+  userId: string;
   searchText: string;
   page: number;
   limit: number;
@@ -162,6 +170,10 @@ export interface ApiSearchResult {
   deliveryLocation?: string;
   scheduledPickupDate?: string;
   scheduledDeliveryDate?: string;
+  // User details
+  sellerDetails?: UserDetails;
+  buyerDetails?: UserDetails;
+  carrierDetails?: UserDetails;
 }
 
 export interface ApiSearchResponse {
@@ -191,6 +203,7 @@ export interface OfferResult extends BaseSearchResult {
   location: string;
   condition: "new" | "used" | "certified";
   status: "available" | "pending" | "sold";
+  sellerDetails?: UserDetails;
 }
 // Purchase entity
 export interface PurchaseResult extends BaseSearchResult {
@@ -203,6 +216,8 @@ export interface PurchaseResult extends BaseSearchResult {
   buyerEmail: string;
   purchaseDate: string;
   status: "pending" | "completed" | "cancelled";
+  buyerDetails?: UserDetails;
+  sellerDetails?: UserDetails;
 }
 // Transport entity
 export interface TransportResult extends BaseSearchResult {

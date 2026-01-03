@@ -40,9 +40,28 @@ export class PurchasesService {
 
     const savedPurchase = await this.purchaseRepository.save(purchase);
 
-    // Publish Kafka event for search service to process
+    // Fetch buyer and seller details from user service
+    let buyerDetails = null;
+    let sellerDetails = null;
     try {
-      await this.eventsService.publishPurchaseCreated(savedPurchase);
+      const [buyerResponse, sellerResponse] = await Promise.allSettled([
+        fetch(`http://user-service:3005/users/${savedPurchase.buyerId}`),
+        fetch(`http://user-service:3005/users/${savedPurchase.sellerId}`)
+      ]);
+
+      if (buyerResponse.status === 'fulfilled' && buyerResponse.value.ok) {
+        buyerDetails = await buyerResponse.value.json();
+      }
+      if (sellerResponse.status === 'fulfilled' && sellerResponse.value.ok) {
+        sellerDetails = await sellerResponse.value.json();
+      }
+    } catch (error) {
+      console.log('Could not fetch user details:', error.message);
+    }
+
+    // Publish Kafka event with enriched data for search service to process
+    try {
+      await this.eventsService.publishPurchaseCreated(savedPurchase, buyerDetails, sellerDetails);
       console.log('✅ Purchase event published to Kafka:', savedPurchase.purchaseId);
     } catch (error) {
       console.error('❌ Failed to publish purchase event to Kafka:', error);

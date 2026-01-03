@@ -8,7 +8,17 @@ export interface OfferEvent {
   entityType: 'offer';
   entityId: string;
   timestamp: string;
-  payload: Offer;
+  payload: Offer & {
+    sellerDetails?: {
+      userId: string;
+      firstName: string;
+      lastName: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      userType: string;
+    };
+  };
 }
 
 @Injectable()
@@ -51,13 +61,24 @@ export class EventsService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publishOfferCreated(offer: Offer): Promise<void> {
+  async publishOfferCreated(offer: Offer, sellerDetails?: any): Promise<void> {
     const event: OfferEvent = {
       eventType: 'OfferCreated',
       entityType: 'offer',
       entityId: offer.offerId,
       timestamp: new Date().toISOString(),
-      payload: offer,
+      payload: {
+        ...offer,
+        sellerDetails: sellerDetails ? {
+          userId: sellerDetails.userId,
+          firstName: sellerDetails.firstName,
+          lastName: sellerDetails.lastName,
+          fullName: `${sellerDetails.firstName} ${sellerDetails.lastName}`,
+          email: sellerDetails.email,
+          phone: sellerDetails.phone,
+          userType: sellerDetails.userType
+        } : null
+      },
     };
 
     await this.publishEvent('offer-events', event);
