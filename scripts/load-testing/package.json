@@ -26,9 +26,10 @@
   "dependencies": {
     "@faker-js/faker": "^8.4.0",
     "axios": "^1.6.0",
+    "colors": "^1.4.0",
     "performance-now": "^2.1.0",
     "progress": "^2.0.3",
-    "colors": "^1.4.0"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0"
