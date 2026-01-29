@@ -109,17 +109,30 @@ async function reindexOffers(offers) {
 
   for (const offer of offers) {
     try {
+      // Generate unique 17-character VIN (standard VIN length)
+      const timestamp = Date.now().toString().slice(-8); // Last 8 digits
+      const randomSuffix = Math.random().toString(36).substring(2, 10).toUpperCase(); // Random chars
+      let uniqueVin = `RIDX${timestamp}${randomSuffix}`;
+      
+      // Ensure exactly 17 characters
+      if (uniqueVin.length > 17) {
+        uniqueVin = uniqueVin.substring(0, 17);
+      } else if (uniqueVin.length < 17) {
+        uniqueVin = uniqueVin + '0'.repeat(17 - uniqueVin.length);
+      }
+      
+      
       // Create a new offer via API to trigger Kafka event and Elasticsearch indexing
       const offerData = {
         sellerId: offer.sellerId,
-        vin: offer.vin,
+        vin: uniqueVin,  // Use unique VIN
         make: offer.make,
         model: offer.model,
         year: offer.year,
         price: parseFloat(offer.price),
         location: offer.location,
         condition: offer.condition,
-        description: offer.description,
+        description: `${offer.description} (Reindexed)`,
         mileage: offer.mileage
       };
       
@@ -127,7 +140,8 @@ async function reindexOffers(offers) {
         offerData.color = offer.color;
       }
       
-      await axios.post(API_ENDPOINTS.offers, offerData);
+      
+      const response = await axios.post(API_ENDPOINTS.offers, offerData);
       
       successCount++;
       process.stdout.write(`\r✅ Offers: ${successCount}/${offers.length}`);
@@ -137,9 +151,11 @@ async function reindexOffers(offers) {
       
     } catch (error) {
       errorCount++;
-      if (errorCount <= 3) {
-        console.log(`\n❌ Error indexing offer ${offer.vin}: ${error.response?.data?.message || error.message}`);
-      }
+      console.log(`\n❌ Error indexing offer ${offer.vin}:`);
+      console.log(`   Status: ${error.response?.status}`);
+      console.log(`   Status Text: ${error.response?.statusText}`);
+      console.log(`   Error Message: ${error.response?.data?.message || error.message}`);
+      console.log(`   Full Error Response:`, error.response?.data);
     }
   }
   
